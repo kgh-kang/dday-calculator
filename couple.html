@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>커플 디데이 계산기 - 사귄 날부터 100일, 200일, 1000일 기념일</title>
+  <meta name="description" content="커플 디데이 계산기로 사귄 날부터 100일, 200일, 300일, 1000일 등 기념일을 확인하세요. 만난 지 며칠인지 바로 계산! 타임라인으로 한눈에 보기.">
+  <meta name="keywords" content="커플 디데이 계산기, 사귄날 계산기, 연애 기념일, 100일 계산, 커플 기념일, 기념일 계산기">
+  <meta property="og:title" content="커플 디데이 계산기 - 우리 만난 지 며칠?">
+  <meta property="og:description" content="사귄 날을 입력하면 지금까지 며칠인지, 모든 기념일 날짜와 타임라인을 한눈에 보여드립니다.">
+  <link rel="canonical" href="https://dday.github.io/couple.html">
+  <style>
+    :root{--bg:#0a0a0a;--card:#141414;--border:#222;--text:#e8e8e8;--text-sub:#777;--accent:#FF6584;--accent2:#6C63FF}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,'Pretendard','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+    header{text-align:center;padding:48px 20px 32px}
+    h1{font-size:2rem;font-weight:800;margin-bottom:8px}
+    h1 span{color:var(--accent)}
+    .header-desc{color:var(--text-sub);font-size:.95rem}
+    nav{display:flex;justify-content:center;gap:6px;padding:0 20px;margin-bottom:32px;flex-wrap:wrap}
+    nav a{padding:8px 16px;border-radius:20px;background:var(--card);color:var(--text-sub);text-decoration:none;font-size:.85rem;font-weight:600;border:1px solid var(--border);transition:all .2s}
+    nav a:hover,nav a.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .container{max-width:640px;margin:0 auto;padding:0 20px 40px}
+
+    .input-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px}
+    .input-group{margin-bottom:16px}
+    .input-group label{display:block;font-size:.8rem;color:var(--text-sub);margin-bottom:6px;font-weight:600}
+    .input-group input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:1rem;outline:none}
+    .input-group input:focus{border-color:var(--accent)}
+    .btn{padding:12px 24px;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;width:100%}
+    .btn:hover{opacity:.85}
+
+    .result{display:none;margin-top:24px;animation:fadeIn .3s}
+    .result.show{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    /* 히어로 카드 */
+    .hero-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;text-align:center;margin-bottom:16px}
+    .hero-label{font-size:.85rem;color:var(--text-sub);margin-bottom:4px}
+    .hero-days{font-size:3.5rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2}
+    .hero-sub{color:var(--text-sub);font-size:.9rem;margin-top:8px}
+
+    /* 실시간 카운트다운 */
+    .countdown{display:flex;justify-content:center;gap:10px;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+    .cd-block{text-align:center;min-width:48px}
+    .cd-value{font-size:1.5rem;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums}
+    .cd-label{font-size:.65rem;color:var(--text-sub);margin-top:2px}
+    .cd-sep{font-size:1.2rem;color:#333;align-self:center;padding-bottom:14px}
+
+    /* 다음 기념일 */
+    .next-anni{background:linear-gradient(135deg,rgba(255,101,132,.1),rgba(108,99,255,.1));border:1px solid rgba(255,101,132,.2);border-radius:12px;padding:16px;text-align:center;margin-bottom:16px}
+    .next-anni-label{font-size:.8rem;color:var(--text-sub)}
+    .next-anni-value{font-size:1.2rem;font-weight:800;color:var(--accent);margin-top:4px}
+    .next-anni-date{font-size:.85rem;color:var(--text-sub)}
+
+    /* 타임라인 */
+    .timeline-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px}
+    .timeline-section h3{font-size:.9rem;color:var(--text-sub);margin-bottom:16px;font-weight:600}
+    .timeline{position:relative;padding-left:28px}
+    .timeline::before{content:'';position:absolute;left:9px;top:0;bottom:0;width:2px;background:#222}
+    .tl-item{position:relative;margin-bottom:20px;padding-bottom:4px}
+    .tl-item:last-child{margin-bottom:0}
+    .tl-dot{position:absolute;left:-24px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid #333;background:var(--bg)}
+    .tl-item.past .tl-dot{background:var(--text-sub);border-color:var(--text-sub)}
+    .tl-item.now .tl-dot{background:transparent;border:2px dashed var(--accent);}
+    .tl-item.future .tl-dot{background:var(--bg);border:2px solid #333;}
+    .tl-item.past{opacity:.55}
+    .tl-header{display:flex;justify-content:space-between;align-items:center}
+    .tl-name{font-weight:800;font-size:.95rem}
+    .tl-dday{font-size:.8rem;font-weight:700;padding:3px 8px;border-radius:6px}
+    .tl-dday.passed{background:rgba(255,255,255,.05);color:#555}
+    .tl-dday.today{background:rgba(255,101,132,.15);color:var(--accent)}
+    .tl-dday.upcoming{background:rgba(108,99,255,.15);color:var(--accent2)}
+    .tl-date{font-size:.8rem;color:var(--text-sub);margin-top:2px}
+
+    /* 현재 위치 마커 */
+    .tl-now-marker{position:relative;margin-bottom:20px;padding:8px 0 8px 0}
+    .tl-now-marker .tl-dot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 10px rgba(255,101,132,.5)}
+    .tl-now-line{font-size:.8rem;color:var(--accent);font-weight:700}
+
+    /* 기념일 리스트 */
+    .anni-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px}
+    .anni-section h3{font-size:.9rem;color:var(--text-sub);margin-bottom:16px;font-weight:600}
+    .anni-list{display:flex;flex-direction:column;gap:8px}
+    .anni-item{display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-radius:10px;padding:12px 14px}
+    .anni-item.past{opacity:.45}
+    .anni-item.next{background:rgba(255,101,132,.06);border:1px solid rgba(255,101,132,.2)}
+    .anni-day{font-weight:800;color:var(--accent);min-width:100px;font-size:.9rem}
+    .anni-date{color:var(--text-sub);font-size:.8rem;flex:1;text-align:center}
+    .anni-badge{font-size:.7rem;padding:3px 8px;border-radius:6px;font-weight:600;min-width:56px;text-align:center}
+    .anni-badge.passed{background:rgba(255,255,255,.05);color:#555}
+    .anni-badge.upcoming{background:rgba(255,101,132,.15);color:var(--accent)}
+
+    /* 공유 버튼 */
+    .share-btns{display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+    .share-btn{padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text-sub);font-size:.8rem;cursor:pointer;transition:all .2s}
+    .share-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+    .seo-content{margin-top:48px;padding-top:32px;border-top:1px solid var(--border)}
+    .seo-content h2{font-size:1.2rem;margin-bottom:12px}
+    .seo-content p{color:var(--text-sub);font-size:.9rem;margin-bottom:16px}
+    footer{text-align:center;padding:32px 20px;color:#444;font-size:.8rem}
+    .toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--accent);color:#fff;padding:12px 24px;border-radius:10px;font-weight:600;font-size:.9rem;transition:transform .3s;z-index:999}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    #shareCanvas{display:none}
+
+    @media(max-width:480px){h1{font-size:1.6rem}.hero-days{font-size:2.8rem}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1><span>커플</span> 디데이</h1>
+    <p class="header-desc">우리 만난 지 며칠일까?</p>
+  </header>
+  <nav>
+    <a href="index.html">디데이 계산</a>
+    <a href="couple.html" class="active">커플 / 기념일</a>
+    <a href="timeline.html">타임라인</a>
+  </nav>
+  <div class="container">
+    <section class="input-section">
+      <div class="input-group">
+        <label>사귀기 시작한 날짜</label>
+        <input type="date" id="coupleDate">
+      </div>
+      <button class="btn" id="calcBtn">계산하기</button>
+    </section>
+
+    <section class="result" id="result">
+      <!-- 히어로: 함께한 일수 -->
+      <div class="hero-card">
+        <p class="hero-label">우리가 함께한 시간</p>
+        <div class="hero-days" id="totalDays"></div>
+        <p class="hero-sub" id="totalSub"></p>
+        <div class="countdown" id="countdown"></div>
+        <div class="share-btns">
+          <button class="share-btn" id="shareBtn">링크 복사</button>
+          <button class="share-btn" id="imageBtn">이미지 저장</button>
+          <button class="share-btn" id="shareTlBtn">타임라인 이미지</button>
+        </div>
+      </div>
+
+      <!-- 다음 기념일 -->
+      <div class="next-anni" id="nextAnni"></div>
+
+      <!-- 타임라인 -->
+      <div class="timeline-section">
+        <h3>기념일 타임라인</h3>
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+    </section>
+
+    <article class="seo-content">
+      <h2>커플 디데이 계산기 &amp; 기념일 계산기</h2>
+      <p>사귄 날짜를 입력하면 오늘까지 며칠이 지났는지, 다음 기념일이 언제인지 자동으로 계산합니다. 22일(투투데이), 100일, 200일, 300일, 500일, 1000일, 1주년~10주년 등 모든 커플 기념일을 한눈에 확인하세요.</p>
+      <h2>기념일 타임라인</h2>
+      <p>지나간 기념일과 다가올 기념일을 타임라인으로 시각화합니다. 오늘이 어디쯤인지 한눈에 파악하고, 다음 기념일을 미리 준비하세요!</p>
+      <h2>커플 기념일 종류</h2>
+      <p>22일(투투데이), 49일, 100일, 200일, 300일, 1주년, 500일, 2주년, 1000일, 3주년, 5주년, 10주년 등 다양한 기념일이 있습니다.</p>
+    </article>
+  </div>
+
+  <footer>D-Day 계산기 &copy; 2025</footer>
+  <div class="toast" id="toast"></div>
+  <canvas id="shareCanvas"></canvas>
+
+  <script>
+    const milestones = [
+      {days:100, label:'100일'},
+      {days:200, label:'200일'},
+      {days:300, label:'300일'},
+      {days:365, label:'1주년'},
+      {days:500, label:'500일'},
+      {days:730, label:'2주년'},
+      {days:1000, label:'1,000일'},
+      {days:1095, label:'3주년'},
+      {days:1460, label:'4주년'},
+      {days:1825, label:'5주년'},
+      {days:2000, label:'2,000일'},
+      {days:2555, label:'7주년'},
+      {days:3000, label:'3,000일'},
+      {days:3650, label:'10주년'},
+    ];
+
+    const coupleDate = document.getElementById('coupleDate');
+    coupleDate.value = new Date().toISOString().split('T')[0];
+    let countdownInterval = null;
+    let currentTotalDiff = 0;
+    let currentStartDate = null;
+
+    // URL 파라미터 또는 마지막 계산 복원
+    const params = new URLSearchParams(location.search);
+    if (params.get('date')) {
+      coupleDate.value = params.get('date');
+      calculate();
+    } else {
+      const last = localStorage.getItem('lastCoupleDate');
+      if (last) {
+        coupleDate.value = last;
+        calculate();
+      }
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', calculate);
+
+    function calculate() {
+      localStorage.setItem('lastCoupleDate', coupleDate.value);
+      const start = new Date(coupleDate.value + 'T00:00:00');
+      const today = new Date(); today.setHours(0,0,0,0);
+      const totalDiff = Math.floor((today - start) / (1000*60*60*24));
+
+      currentTotalDiff = totalDiff;
+      currentStartDate = start;
+
+      // 히어로
+      document.getElementById('totalDays').textContent = totalDiff.toLocaleString() + '일';
+      const years = Math.floor(totalDiff / 365);
+      const months = Math.floor((totalDiff % 365) / 30);
+      const days = totalDiff % 30;
+      let subText = '';
+      if (years > 0) subText += years + '년 ';
+      if (months > 0) subText += months + '개월 ';
+      subText += days + '일';
+      document.getElementById('totalSub').textContent = subText;
+
+      // 실시간 카운트다운
+      if (countdownInterval) clearInterval(countdownInterval);
+      updateLiveCount(start);
+      countdownInterval = setInterval(() => updateLiveCount(start), 1000);
+
+      // 기념일을 타임라인에 동기화
+      syncAnniversaries(start, totalDiff);
+
+      // 다음 기념일
+      const nextMilestone = milestones.find(m => m.days > totalDiff);
+      const nextAnni = document.getElementById('nextAnni');
+      if (nextMilestone) {
+        const nextDate = new Date(start);
+        nextDate.setDate(nextDate.getDate() + nextMilestone.days);
+        const daysLeft = nextMilestone.days - totalDiff;
+        nextAnni.innerHTML = `
+          <p class="next-anni-label">다음 기념일</p>
+          <p class="next-anni-value">${nextMilestone.label} (D-${daysLeft})</p>
+          <p class="next-anni-date">${fmtDate(nextDate)} (${dayName(nextDate)})</p>
+        `;
+        nextAnni.style.display = '';
+      } else {
+        nextAnni.style.display = 'none';
+      }
+
+      // 타임라인
+      renderTimeline(start, totalDiff, nextMilestone);
+
+      document.getElementById('result').classList.add('show');
+    }
+
+    function updateLiveCount(start) {
+      const now = new Date();
+      const diff = now - start;
+      const d = Math.floor(diff / (1000*60*60*24));
+      const h = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+      const m = Math.floor((diff % (1000*60*60)) / (1000*60));
+      const s = Math.floor((diff % (1000*60)) / 1000);
+
+      document.getElementById('countdown').innerHTML = `
+        <div class="cd-block"><div class="cd-value">${d.toLocaleString()}</div><div class="cd-label">일</div></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><div class="cd-value">${String(h).padStart(2,'0')}</div><div class="cd-label">시간</div></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><div class="cd-value">${String(m).padStart(2,'0')}</div><div class="cd-label">분</div></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><div class="cd-value">${String(s).padStart(2,'0')}</div><div class="cd-label">초</div></div>
+      `;
+    }
+
+    // 타임라인 렌더링
+    function renderTimeline(start, totalDiff, nextMilestone) {
+      const timeline = document.getElementById('timeline');
+      const today = new Date(); today.setHours(0,0,0,0);
+      let html = '';
+      let todayInserted = false;
+
+      for (let i = 0; i < milestones.length; i++) {
+        const m = milestones[i];
+        const mDate = new Date(start);
+        mDate.setDate(mDate.getDate() + m.days);
+        const isPast = m.days <= totalDiff;
+        const isNext = nextMilestone && m.days === nextMilestone.days;
+
+        // "오늘" 마커 삽입: 지나간 기념일과 다가올 기념일 사이
+        if (!todayInserted && !isPast) {
+          html += `
+            <div class="tl-now-marker">
+              <div class="tl-dot"></div>
+              <div class="tl-now-line">오늘 (${currentTotalDiff.toLocaleString()}일째)</div>
+              <div class="tl-date">${fmtDate(today)} (${dayName(today)})</div>
+            </div>
+          `;
+          todayInserted = true;
+        }
+
+        const cls = isPast ? 'past' : isNext ? 'now' : 'future';
+        const diff = m.days - totalDiff;
+        let badgeCls, badgeText;
+        if (isPast) { badgeCls = 'passed'; badgeText = '지남'; }
+        else { badgeCls = 'upcoming'; badgeText = `D-${diff}`; }
+
+        html += `
+          <div class="tl-item ${cls}">
+            <div class="tl-dot"></div>
+            <div class="tl-header">
+              <span class="tl-name">${m.label}</span>
+              <span class="tl-dday ${badgeCls}">${badgeText}</span>
+            </div>
+            <div class="tl-date">${fmtDate(mDate)} (${dayName(mDate)})</div>
+          </div>
+        `;
+      }
+
+      // 모든 기념일이 지났으면 마지막에 오늘 표시
+      if (!todayInserted) {
+        html += `
+          <div class="tl-now-marker">
+            <div class="tl-dot"></div>
+            <div class="tl-now-line">오늘 (${currentTotalDiff.toLocaleString()}일째)</div>
+            <div class="tl-date">${fmtDate(today)} (${dayName(today)})</div>
+          </div>
+        `;
+      }
+
+      timeline.innerHTML = html;
+    }
+
+    // 기념일을 타임라인(ddays)에 동기화
+    function syncAnniversaries(start, totalDiff) {
+      const saved = JSON.parse(localStorage.getItem('ddays') || '[]');
+
+      // 기존 커플 기념일 제거 (source: couple 태그로 구분)
+      const filtered = saved.filter(s => s.source !== 'couple');
+
+      // 다가올 기념일 3개만 추가
+      const upcoming = milestones
+        .filter(m => m.days > totalDiff)
+        .slice(0, 3);
+
+      upcoming.forEach(m => {
+        const d = new Date(start);
+        d.setDate(d.getDate() + m.days);
+        const dateStr = d.toISOString().split('T')[0];
+        filtered.push({
+          name: `커플 ${m.label}`,
+          date: dateStr,
+          id: Date.now() + m.days,
+          source: 'couple'
+        });
+      });
+
+      localStorage.setItem('ddays', JSON.stringify(filtered));
+    }
+
+    // 공유 링크
+    document.getElementById('shareBtn').addEventListener('click', () => {
+      const url = `${location.origin}${location.pathname}?date=${coupleDate.value}`;
+      navigator.clipboard.writeText(url);
+      showToast('링크가 복사되었습니다!');
+    });
+
+    // 타임라인 이미지 저장
+    document.getElementById('shareTlBtn').addEventListener('click', () => {
+      const today = new Date(); today.setHours(0,0,0,0);
+      const dayN = ['일','월','화','수','목','금','토'];
+      const start = new Date(coupleDate.value + 'T00:00:00');
+
+      const items = [];
+      let todayInserted = false;
+      for (const m of milestones) {
+        const d = new Date(start); d.setDate(d.getDate() + m.days);
+        const diff = m.days - currentTotalDiff;
+        if (!todayInserted && diff >= 0) {
+          items.push({ name: `오늘 (${currentTotalDiff.toLocaleString()}일째)`, date: fmtDate(today), day: dayN[today.getDay()], dday: '', type: 'today' });
+          todayInserted = true;
+        }
+        const ddayText = diff <= 0 ? '지남' : `D-${diff}`;
+        items.push({ name: m.label, date: fmtDate(d), day: dayN[d.getDay()], dday: ddayText, type: diff < 0 ? 'past' : diff === 0 ? 'today' : 'future' });
+      }
+      if (!todayInserted) {
+        items.push({ name: `오늘 (${currentTotalDiff.toLocaleString()}일째)`, date: fmtDate(today), day: dayN[today.getDay()], dday: '', type: 'today' });
+      }
+
+      const canvas = document.getElementById('shareCanvas');
+      const ctx = canvas.getContext('2d');
+      const lineH = 52, padTop = 120, padBot = 80, w = 540;
+      const h = padTop + items.length * lineH + padBot;
+      canvas.width = w; canvas.height = h;
+
+      const grad = ctx.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0, '#1a0a1e'); grad.addColorStop(0.5, '#2d1b3d'); grad.addColorStop(1, '#0f0c29');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+
+      ctx.fillStyle = '#FF6584'; ctx.font = '800 24px -apple-system, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('커플 기념일 타임라인', w / 2, 60);
+
+      const lineX = 60;
+      ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(lineX, padTop - 10); ctx.lineTo(lineX, padTop + items.length * lineH - 20); ctx.stroke();
+
+      ctx.textAlign = 'left';
+      items.forEach((item, i) => {
+        const y = padTop + i * lineH;
+        ctx.beginPath(); ctx.arc(lineX, y + 8, 6, 0, Math.PI * 2);
+        if (item.type === 'today') { ctx.fillStyle = '#FF6584'; ctx.fill(); }
+        else if (item.type === 'past') { ctx.fillStyle = '#555'; ctx.fill(); }
+        else { ctx.fillStyle = 'transparent'; ctx.strokeStyle = '#FF6584'; ctx.lineWidth = 2; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]); }
+
+        const alpha = item.type === 'past' ? 0.5 : 1;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = item.type === 'today' && item.name.includes('오늘') ? '#FF6584' : '#e8e8e8';
+        ctx.font = '700 15px -apple-system, sans-serif'; ctx.fillText(item.name, lineX + 24, y + 6);
+        ctx.fillStyle = '#777'; ctx.font = '400 12px -apple-system, sans-serif'; ctx.fillText(`${item.date} (${item.day})`, lineX + 24, y + 24);
+        if (item.dday) { ctx.textAlign = 'right'; ctx.fillStyle = item.type === 'past' ? '#555' : '#FF6584'; ctx.font = '700 14px -apple-system, sans-serif'; ctx.fillText(item.dday, w - 40, y + 12); ctx.textAlign = 'left'; }
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = '#444'; ctx.font = '400 12px -apple-system, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('D-Day 계산기', w / 2, h - 30);
+
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'couple-timeline.png'; a.click();
+        URL.revokeObjectURL(url);
+        showToast('이미지가 저장되었습니다!');
+      });
+    });
+
+    // 이미지 저장
+    document.getElementById('imageBtn').addEventListener('click', () => {
+      const canvas = document.getElementById('shareCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 540; canvas.height = 960;
+
+      const grad = ctx.createLinearGradient(0, 0, 540, 960);
+      grad.addColorStop(0, '#1a0a1e');
+      grad.addColorStop(0.5, '#2d1b3d');
+      grad.addColorStop(1, '#0f0c29');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 540, 960);
+
+      ctx.fillStyle = '#888';
+      ctx.font = '600 20px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('우리가 함께한 시간', 270, 340);
+
+      const ddayText = currentTotalDiff.toLocaleString() + '일';
+      ctx.font = '900 72px -apple-system, sans-serif';
+      const gradient = ctx.createLinearGradient(100, 380, 440, 460);
+      gradient.addColorStop(0, '#FF6584');
+      gradient.addColorStop(1, '#6C63FF');
+      ctx.fillStyle = gradient;
+      ctx.fillText(ddayText, 270, 440);
+
+      const years = Math.floor(currentTotalDiff / 365);
+      const months = Math.floor((currentTotalDiff % 365) / 30);
+      const days = currentTotalDiff % 30;
+      let subText = '';
+      if (years > 0) subText += years + '년 ';
+      if (months > 0) subText += months + '개월 ';
+      subText += days + '일';
+      ctx.fillStyle = '#888';
+      ctx.font = '400 18px -apple-system, sans-serif';
+      ctx.fillText(subText, 270, 490);
+
+      // 다음 기념일
+      const next = milestones.find(m => m.days > currentTotalDiff);
+      if (next) {
+        ctx.fillStyle = '#FF6584';
+        ctx.font = '700 18px -apple-system, sans-serif';
+        ctx.fillText(`다음 기념일: ${next.label} (D-${next.days - currentTotalDiff})`, 270, 560);
+      }
+
+      ctx.fillStyle = '#444';
+      ctx.font = '400 14px -apple-system, sans-serif';
+      ctx.fillText('D-Day 계산기', 270, 880);
+
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `couple-dday-${currentTotalDiff}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('이미지가 저장되었습니다!');
+      });
+    });
+
+    function fmtDate(d) {
+      return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function dayName(d) {
+      return ['일','월','화','수','목','금','토'][d.getDay()];
+    }
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1500);
+    }
+  </script>
+</body>
+</html>

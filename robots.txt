@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://dday.github.io/sitemap.xml

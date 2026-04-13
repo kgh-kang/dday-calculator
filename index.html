@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>디데이 계산기 - 무료 D-Day 계산, 기념일 계산</title>
+  <meta name="description" content="디데이 계산기로 남은 날짜를 쉽게 계산하세요. 기념일, 수능, 전역일, 커플 디데이를 한눈에 확인할 수 있습니다. 실시간 카운트다운, 시각화, 공유 카드 이미지 생성까지.">
+  <meta name="keywords" content="디데이 계산기, D-Day 계산기, 기념일 계산기, 날짜 계산기, 수능 디데이, 전역일 계산기">
+  <meta property="og:title" content="디데이 계산기 - 무료 D-Day 계산">
+  <meta property="og:description" content="디데이 계산기로 남은 날짜를 쉽게 계산하세요. 실시간 카운트다운, 시각화, 인스타 공유 카드까지.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ko_KR">
+  <link rel="canonical" href="https://dday.github.io/">
+  <style>
+    :root {
+      --bg: #0a0a0a; --card: #141414; --card-hover: #1a1a1a; --border: #222;
+      --text: #e8e8e8; --text-sub: #777; --accent: #6C63FF; --accent2: #FF6584;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, 'Pretendard', 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+    header { text-align: center; padding: 48px 20px 32px; }
+    h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+    h1 span { color: var(--accent); }
+    .header-desc { color: var(--text-sub); font-size: 0.95rem; }
+    nav { display: flex; justify-content: center; gap: 6px; padding: 0 20px; margin-bottom: 32px; flex-wrap: wrap; }
+    nav a { padding: 8px 16px; border-radius: 20px; background: var(--card); color: var(--text-sub); text-decoration: none; font-size: 0.85rem; font-weight: 600; border: 1px solid var(--border); transition: all 0.2s; }
+    nav a:hover, nav a.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .container { max-width: 640px; margin: 0 auto; padding: 0 20px 40px; }
+
+    /* 입력 */
+    .input-section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+    .input-row { display: flex; gap: 12px; align-items: end; margin-bottom: 16px; }
+    .input-group { flex: 1; }
+    .input-group label { display: block; font-size: 0.8rem; color: var(--text-sub); margin-bottom: 6px; font-weight: 600; }
+    .input-group input[type="text"], .input-group input[type="date"] { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); font-size: 1rem; outline: none; }
+    .input-group input:focus { border-color: var(--accent); }
+    .btn { padding: 12px 24px; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+    .btn-primary:hover { opacity: 0.85; }
+    .quick-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .quick-btn { padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-sub); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+    .quick-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* 결과 */
+    .result { display: none; margin-bottom: 24px; animation: fadeIn 0.3s; }
+    .result.show { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .result-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px; text-align: center; }
+    .result-title { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 8px; }
+    .result-days { font-size: 3.5rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.2; }
+    .result-label { font-size: 1rem; color: var(--text-sub); margin-top: 4px; }
+
+    /* 카운트다운 */
+    .countdown { display: flex; justify-content: center; gap: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .cd-block { text-align: center; min-width: 52px; }
+    .cd-value { font-size: 1.8rem; font-weight: 900; color: var(--text); font-variant-numeric: tabular-nums; }
+    .cd-label { font-size: 0.7rem; color: var(--text-sub); margin-top: 2px; }
+    .cd-sep { font-size: 1.5rem; color: #333; align-self: center; padding-bottom: 16px; }
+
+    /* 토글 */
+    .toggle-row { display: flex; justify-content: center; gap: 16px; margin: 16px 0 4px; }
+    .toggle { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; user-select: none; }
+    .toggle input { display: none; }
+    .toggle-slider { width: 32px; height: 18px; background: #333; border-radius: 9px; position: relative; transition: background 0.2s; }
+    .toggle-slider::after { content: ''; position: absolute; width: 14px; height: 14px; background: #888; border-radius: 50%; top: 2px; left: 2px; transition: all 0.2s; }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::after { left: 16px; background: #fff; }
+    .result-detail { display: flex; justify-content: center; gap: 24px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .detail-item { text-align: center; }
+    .detail-value { font-size: 1.5rem; font-weight: 800; }
+    .detail-label { font-size: 0.75rem; color: var(--text-sub); }
+
+    /* 시각화 - 도트 그리드 */
+    .viz-section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-top: 16px; }
+    .viz-section h3 { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 12px; font-weight: 600; }
+    .dot-grid { display: flex; flex-wrap: wrap; gap: 3px; }
+    .dot { width: 8px; height: 8px; border-radius: 2px; background: #1e1e1e; }
+    .dot.filled { background: var(--accent); }
+    .dot.filled-accent2 { background: var(--accent2); }
+    .viz-legend { display: flex; gap: 16px; margin-top: 10px; font-size: 0.75rem; color: var(--text-sub); }
+    .viz-legend span { display: flex; align-items: center; gap: 4px; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+
+    /* 타임라인 */
+    .timeline-section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-top: 16px; }
+    .timeline-section h3 { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 16px; font-weight: 600; }
+    .timeline { position: relative; padding-left: 24px; }
+    .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: #222; }
+    .tl-item { position: relative; margin-bottom: 16px; }
+    .tl-item::before { content: ''; position: absolute; left: -20px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: #333; border: 2px solid #444; }
+    .tl-item.active::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px rgba(108,99,255,0.4); }
+    .tl-item.past::before { background: var(--text-sub); border-color: var(--text-sub); }
+    .tl-name { font-weight: 700; font-size: 0.9rem; }
+    .tl-date { font-size: 0.8rem; color: var(--text-sub); }
+    .tl-dday { font-size: 0.8rem; color: var(--accent); font-weight: 700; }
+
+    /* 재미 요소 */
+    .fun-section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-top: 16px; }
+    .fun-section h3 { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 16px; font-weight: 600; }
+    .fun-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .fun-item { background: var(--bg); border-radius: 10px; padding: 14px; text-align: center; }
+    .fun-value { font-size: 1.2rem; font-weight: 800; color: var(--accent); margin-bottom: 2px; }
+    .fun-label { font-size: 0.7rem; color: var(--text-sub); }
+
+    /* 공유 버튼 */
+    .share-btns { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+    .share-btn { padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-sub); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+    .share-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* 위젯 코드 */
+    .widget-section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-top: 16px; }
+    .widget-section h3 { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 12px; font-weight: 600; }
+    .widget-code { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: 'SF Mono', monospace; font-size: 0.75rem; color: var(--text-sub); word-break: break-all; cursor: pointer; }
+    .widget-code:hover { border-color: var(--accent); }
+
+    /* 저장된 디데이 */
+    .saved-section { margin-top: 32px; }
+    .saved-section h2 { font-size: 1.1rem; margin-bottom: 16px; font-weight: 700; }
+    .saved-list { display: flex; flex-direction: column; gap: 10px; }
+    .saved-item { display: flex; align-items: center; justify-content: space-between; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; transition: background 0.2s; }
+    .saved-item:hover { background: var(--card-hover); }
+    .saved-info { flex: 1; }
+    .saved-name { font-weight: 700; font-size: 0.95rem; }
+    .saved-date { font-size: 0.8rem; color: var(--text-sub); }
+    .saved-dday { font-size: 1.3rem; font-weight: 800; color: var(--accent); min-width: 80px; text-align: right; }
+    .saved-dday.past { color: var(--text-sub); }
+    .saved-delete { background: none; border: none; color: #555; cursor: pointer; font-size: 1.1rem; margin-left: 12px; padding: 4px; }
+    .saved-delete:hover { color: var(--accent2); }
+    .empty-msg { color: var(--text-sub); font-size: 0.85rem; text-align: center; padding: 24px; }
+
+    /* 저장 타임라인 */
+    .saved-timeline { position: relative; padding-left: 28px; margin-bottom: 20px; }
+    .saved-timeline:empty { display: none; }
+    .saved-timeline::before { content: ''; position: absolute; left: 9px; top: 0; bottom: 0; width: 2px; background: #222; }
+    .stl-item { position: relative; margin-bottom: 16px; }
+    .stl-item:last-child { margin-bottom: 0; }
+    .stl-dot { position: absolute; left: -24px; top: 4px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #333; background: var(--bg); }
+    .stl-item.past .stl-dot { background: var(--text-sub); border-color: var(--text-sub); }
+    .stl-item.today .stl-dot { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px rgba(108,99,255,.4); }
+    .stl-item.future .stl-dot { background: transparent; border: 2px dashed var(--accent); }
+    .stl-item.past { opacity: .5; }
+    .stl-item.now-marker .stl-dot { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px rgba(108,99,255,.5); }
+    .stl-header { display: flex; justify-content: space-between; align-items: center; }
+    .stl-name { font-weight: 700; font-size: .9rem; }
+    .stl-dday { font-size: .8rem; font-weight: 700; color: var(--accent); }
+    .stl-dday.past-text { color: var(--text-sub); }
+    .stl-date { font-size: .78rem; color: var(--text-sub); margin-top: 2px; }
+    .stl-now-label { font-size: .8rem; color: var(--accent); font-weight: 700; }
+
+    /* SEO */
+    .seo-content { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+    .seo-content h2 { font-size: 1.2rem; margin-bottom: 12px; }
+    .seo-content p { color: var(--text-sub); font-size: 0.9rem; margin-bottom: 16px; }
+    footer { text-align: center; padding: 32px 20px; color: #444; font-size: 0.8rem; }
+    .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--accent); color: #fff; padding: 12px 24px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; transition: transform 0.3s; z-index: 999; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* 공유 카드 캔버스 (숨김) */
+    #shareCanvas { display: none; }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 1.6rem; }
+      .result-days { font-size: 2.8rem; }
+      .input-row { flex-direction: column; }
+      .fun-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><span>D-Day</span> 계산기</h1>
+    <p class="header-desc">남은 날짜를 쉽고 빠르게 계산하세요</p>
+  </header>
+
+  <nav>
+    <a href="index.html" class="active">디데이 계산</a>
+    <a href="couple.html">커플 / 기념일</a>
+    <a href="timeline.html">타임라인</a>
+  </nav>
+
+  <div class="container">
+    <section class="input-section">
+      <div class="input-row">
+        <div class="input-group">
+          <label>이름 (선택)</label>
+          <input type="text" id="ddayName" placeholder="예: 수능, 여행, 프로젝트 마감">
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>시작 날짜</label>
+          <input type="date" id="startDate">
+        </div>
+        <div class="input-group">
+          <label>목표 날짜</label>
+          <input type="date" id="ddayDate">
+        </div>
+      </div>
+      <div class="quick-btns">
+        <button class="quick-btn" data-days="100">100일 후</button>
+        <button class="quick-btn" data-days="365">1년 후</button>
+      </div>
+      <button class="btn btn-primary" id="calcBtn">계산하기</button>
+    </section>
+
+    <!-- 결과 -->
+    <div class="result" id="result">
+      <!-- 메인 결과 카드 -->
+      <div class="result-card">
+        <p class="result-title" id="resultTitle"></p>
+        <div class="result-days" id="resultDays"></div>
+        <p class="result-label" id="resultLabel"></p>
+        <div class="countdown" id="countdown"></div>
+        <div class="toggle-row">
+          <label class="toggle"><input type="checkbox" id="showWeeks" checked><span class="toggle-slider"></span> 주</label>
+          <label class="toggle"><input type="checkbox" id="showHours" checked><span class="toggle-slider"></span> 시간</label>
+          <label class="toggle"><input type="checkbox" id="showMinutes" checked><span class="toggle-slider"></span> 분</label>
+          <label class="toggle"><input type="checkbox" id="showSeconds" checked><span class="toggle-slider"></span> 초</label>
+        </div>
+        <div class="result-detail">
+          <div class="detail-item" id="weekItem"><div class="detail-value" id="detailWeeks">0</div><div class="detail-label">주</div></div>
+          <div class="detail-item" id="hourItem"><div class="detail-value" id="detailHours">0</div><div class="detail-label">시간</div></div>
+          <div class="detail-item" id="minItem"><div class="detail-value" id="detailMinutes">0</div><div class="detail-label">분</div></div>
+          <div class="detail-item" id="secItem"><div class="detail-value" id="detailSeconds">0</div><div class="detail-label">초</div></div>
+        </div>
+        <div class="share-btns">
+          <button class="share-btn" id="saveBtn">저장하기</button>
+          <button class="share-btn" id="shareBtn">링크 복사</button>
+          <button class="share-btn" id="imageBtn">이미지 저장</button>
+        </div>
+      </div>
+
+      <!-- 위젯 코드 -->
+      <div class="widget-section">
+        <h3>블로그/노션에 임베드</h3>
+        <div class="widget-code" id="widgetCode" onclick="copyWidget()"></div>
+      </div>
+    </div>
+
+    <article class="seo-content">
+      <h2>디데이(D-Day) 계산기란?</h2>
+      <p>디데이 계산기는 특정 날짜까지 남은 일수를 계산해주는 도구입니다. 수능, 시험, 기념일, 전역일, 여행 출발일 등 중요한 날짜까지 며칠이 남았는지 한눈에 확인할 수 있습니다.</p>
+      <h2>디데이 계산 방법</h2>
+      <p>목표 날짜를 입력하면 오늘 날짜를 기준으로 남은 일수를 자동으로 계산합니다. D-100, D-30 등 중요한 시점을 미리 파악하여 계획을 세울 수 있습니다. 지나간 날짜를 입력하면 경과한 일수도 확인 가능합니다.</p>
+      <h2>이런 분들에게 추천합니다</h2>
+      <p>수험생, 취준생, 커플, 군인, 임산부 등 중요한 날짜를 관리해야 하는 모든 분들이 사용할 수 있습니다. 여러 개의 디데이를 저장하여 한 번에 관리해보세요.</p>
+    </article>
+  </div>
+
+  <footer>D-Day 계산기 &copy; 2025</footer>
+  <div class="toast" id="toast"></div>
+  <canvas id="shareCanvas"></canvas>
+
+  <script>
+    const ddayName = document.getElementById('ddayName');
+    const ddayDate = document.getElementById('ddayDate');
+    const startDateEl = document.getElementById('startDate');
+    const calcBtn = document.getElementById('calcBtn');
+    const resultEl = document.getElementById('result');
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    startDateEl.value = todayStr;
+    ddayDate.value = todayStr;
+
+    let countdownInterval = null;
+    let currentDays = 0;
+    let currentName = '';
+
+    // 토글
+    ['showWeeks','showHours','showMinutes','showSeconds'].forEach(id => {
+      document.getElementById(id).addEventListener('change', updateVisibility);
+    });
+    function updateVisibility() {
+      document.getElementById('weekItem').style.display = document.getElementById('showWeeks').checked ? '' : 'none';
+      document.getElementById('hourItem').style.display = document.getElementById('showHours').checked ? '' : 'none';
+      document.getElementById('minItem').style.display = document.getElementById('showMinutes').checked ? '' : 'none';
+      document.getElementById('secItem').style.display = document.getElementById('showSeconds').checked ? '' : 'none';
+    }
+
+    // 퀵 버튼
+    document.querySelectorAll('.quick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.days) {
+          const d = new Date();
+          d.setDate(d.getDate() + parseInt(btn.dataset.days));
+          ddayDate.value = d.toISOString().split('T')[0];
+          ddayName.value = btn.textContent;
+        } else if (btn.dataset.date) {
+          ddayDate.value = btn.dataset.date;
+          ddayName.value = btn.textContent;
+        }
+        startDateEl.value = todayStr;
+        calculate();
+      });
+    });
+
+    // URL 파라미터 또는 마지막 계산 복원
+    const params = new URLSearchParams(location.search);
+    if (params.get('date')) {
+      ddayDate.value = params.get('date');
+      if (params.get('name')) ddayName.value = decodeURIComponent(params.get('name'));
+      if (params.get('start')) startDateEl.value = params.get('start');
+      calculate();
+    } else {
+      const last = JSON.parse(localStorage.getItem('lastCalc') || 'null');
+      if (last) {
+        ddayName.value = last.name || '';
+        ddayDate.value = last.date || todayStr;
+        startDateEl.value = last.start || todayStr;
+        calculate();
+      }
+    }
+
+    calcBtn.addEventListener('click', calculate);
+    ddayDate.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+
+    function calculate() {
+      const targetDate = new Date(ddayDate.value + 'T00:00:00');
+      const baseDate = new Date(startDateEl.value + 'T00:00:00');
+      const diff = targetDate - baseDate;
+      const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      const absDays = Math.abs(days);
+      const name = ddayName.value || formatDate(targetDate);
+      const isFromToday = startDateEl.value === todayStr;
+
+      currentDays = days;
+      currentName = name;
+
+      // 마지막 계산 저장
+      localStorage.setItem('lastCalc', JSON.stringify({ name: ddayName.value, date: ddayDate.value, start: startDateEl.value }));
+
+      document.getElementById('resultTitle').textContent = name;
+
+      if (days > 0) {
+        document.getElementById('resultDays').textContent = `D-${days}`;
+        const from = isFromToday ? '' : `${formatDate(baseDate)} 기준, `;
+        document.getElementById('resultLabel').textContent = `${from}${formatDate(targetDate)}까지 ${days}일 남았습니다`;
+      } else if (days === 0) {
+        document.getElementById('resultDays').textContent = 'D-Day';
+        document.getElementById('resultLabel').textContent = isFromToday ? '오늘이 바로 그 날입니다!' : '같은 날짜입니다';
+      } else {
+        document.getElementById('resultDays').textContent = `D+${absDays}`;
+        const from = isFromToday ? '' : `${formatDate(baseDate)} 기준, `;
+        document.getElementById('resultLabel').textContent = `${from}${formatDate(targetDate)}로부터 ${absDays}일 지났습니다`;
+      }
+
+      document.getElementById('detailWeeks').textContent = Math.floor(absDays / 7).toLocaleString();
+      document.getElementById('detailHours').textContent = (absDays * 24).toLocaleString();
+      document.getElementById('detailMinutes').textContent = (absDays * 24 * 60).toLocaleString();
+      document.getElementById('detailSeconds').textContent = (absDays * 24 * 60 * 60).toLocaleString();
+
+      // 카운트다운
+      if (countdownInterval) clearInterval(countdownInterval);
+      if (isFromToday && days !== 0) {
+        updateCountdown(targetDate);
+        countdownInterval = setInterval(() => updateCountdown(targetDate), 1000);
+      } else {
+        document.getElementById('countdown').innerHTML = '';
+      }
+
+      // 위젯 코드
+      renderWidget();
+
+      resultEl.classList.add('show');
+    }
+
+    function updateCountdown(targetDate) {
+      const now = new Date();
+      const target = new Date(targetDate);
+      target.setHours(0, 0, 0, 0);
+      const diff = target - now;
+      const absDiff = Math.abs(diff);
+      const prefix = diff > 0 ? '' : '+';
+
+      const d = Math.floor(absDiff / (1000*60*60*24));
+      const h = Math.floor((absDiff % (1000*60*60*24)) / (1000*60*60));
+      const m = Math.floor((absDiff % (1000*60*60)) / (1000*60));
+      const s = Math.floor((absDiff % (1000*60)) / 1000);
+
+      document.getElementById('countdown').innerHTML = `
+        <div class="cd-block"><div class="cd-value">${prefix}${d}</div><div class="cd-label">일</div></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><div class="cd-value">${String(h).padStart(2,'0')}</div><div class="cd-label">시간</div></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><div class="cd-value">${String(m).padStart(2,'0')}</div><div class="cd-label">분</div></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><div class="cd-value">${String(s).padStart(2,'0')}</div><div class="cd-label">초</div></div>
+      `;
+
+      const totalSec = Math.floor(absDiff / 1000);
+      if (document.getElementById('showWeeks').checked) document.getElementById('detailWeeks').textContent = Math.floor(d / 7).toLocaleString();
+      if (document.getElementById('showHours').checked) document.getElementById('detailHours').textContent = Math.floor(totalSec / 3600).toLocaleString();
+      if (document.getElementById('showMinutes').checked) document.getElementById('detailMinutes').textContent = Math.floor(totalSec / 60).toLocaleString();
+      if (document.getElementById('showSeconds').checked) document.getElementById('detailSeconds').textContent = totalSec.toLocaleString();
+    }
+
+    // ====== 1. 도트 그리드 시각화 ======
+    function renderDotGrid(days, absDays, isFromToday, baseDate, targetDate) {
+      const grid = document.getElementById('dotGrid');
+      const totalDots = Math.min(absDays, 365); // 최대 365개
+
+      if (days > 0 && isFromToday) {
+        // 미래: 전체 기간 중 지나간 날 표시
+        const today = new Date(); today.setHours(0,0,0,0);
+        const passed = Math.ceil((today - baseDate) / (1000*60*60*24));
+        const total = absDays;
+        const dots = Math.min(total, 365);
+        const filledRatio = Math.max(0, passed / total);
+        const filledCount = Math.round(dots * filledRatio);
+
+        grid.innerHTML = Array.from({length: dots}, (_, i) =>
+          `<div class="dot ${i < filledCount ? 'filled' : ''}"></div>`
+        ).join('');
+      } else {
+        // 과거: 전부 채움
+        grid.innerHTML = Array.from({length: totalDots}, () =>
+          `<div class="dot filled"></div>`
+        ).join('');
+      }
+    }
+
+    // ====== 타임라인 (현재 계산 + 저장된 것 통합) ======
+    function renderTimeline() {
+      const saved = JSON.parse(localStorage.getItem('ddays') || '[]');
+      const today = new Date(); today.setHours(0,0,0,0);
+      const dayNames = ['일','월','화','수','목','금','토'];
+
+      // 현재 계산 + 저장된 것 합치기
+      const items = [
+        { name: currentName, date: ddayDate.value, current: true },
+        ...saved.map(s => ({ ...s, current: false }))
+      ];
+
+      // 중복 제거
+      const unique = [];
+      const seen = new Set();
+      items.forEach(item => {
+        const key = item.date + item.name;
+        if (!seen.has(key)) { seen.add(key); unique.push(item); }
+      });
+
+      unique.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      const timeline = document.getElementById('timeline');
+      const section = document.getElementById('timelineSection');
+
+      if (unique.length <= 1 && saved.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+      section.style.display = '';
+
+      let html = '';
+      let todayInserted = false;
+
+      for (const item of unique) {
+        const target = new Date(item.date + 'T00:00:00');
+        const diff = Math.ceil((target - today) / (1000*60*60*24));
+        const isPast = diff < 0;
+        const isToday = diff === 0;
+
+        // "오늘" 마커
+        if (!todayInserted && !isPast) {
+          html += `<div class="stl-item now-marker">
+            <div class="stl-dot"></div>
+            <div class="stl-now-label">오늘</div>
+            <div class="stl-date">${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')} (${dayNames[today.getDay()]})</div>
+          </div>`;
+          todayInserted = true;
+        }
+
+        const cls = isToday ? 'today' : isPast ? 'past' : 'future';
+        const ddayText = diff > 0 ? `D-${diff}` : diff === 0 ? 'D-Day' : `D+${Math.abs(diff)}`;
+        const deleteBtn = !item.current && item.id ? `<button class="saved-delete" onclick="deleteDday(${item.id})" style="margin-left:8px">&#x2715;</button>` : '';
+
+        html += `<div class="stl-item ${cls}">
+          <div class="stl-dot"></div>
+          <div class="stl-header">
+            <span class="stl-name">${item.name}</span>
+            <span style="display:flex;align-items:center">
+              <span class="stl-dday ${isPast ? 'past-text' : ''}">${ddayText}</span>
+              ${deleteBtn}
+            </span>
+          </div>
+          <div class="stl-date">${target.getFullYear()}.${String(target.getMonth()+1).padStart(2,'0')}.${String(target.getDate()).padStart(2,'0')} (${dayNames[target.getDay()]})</div>
+        </div>`;
+      }
+
+      if (!todayInserted) {
+        html += `<div class="stl-item now-marker">
+          <div class="stl-dot"></div>
+          <div class="stl-now-label">오늘</div>
+          <div class="stl-date">${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')} (${dayNames[today.getDay()]})</div>
+        </div>`;
+      }
+
+      timeline.innerHTML = html;
+    }
+
+    // ====== 4. 공유 카드 이미지 ======
+    document.getElementById('imageBtn').addEventListener('click', generateShareImage);
+
+    function generateShareImage() {
+      const canvas = document.getElementById('shareCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // 인스타 스토리 사이즈 (1080x1920) -> 축소 (540x960)
+      canvas.width = 540;
+      canvas.height = 960;
+
+      // 배경 그라디언트
+      const grad = ctx.createLinearGradient(0, 0, 540, 960);
+      grad.addColorStop(0, '#0f0c29');
+      grad.addColorStop(0.5, '#302b63');
+      grad.addColorStop(1, '#24243e');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 540, 960);
+
+      // 타이틀
+      ctx.fillStyle = '#888';
+      ctx.font = '600 20px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(currentName, 270, 300);
+
+      // D-Day 숫자
+      const ddayText = document.getElementById('resultDays').textContent;
+      ctx.font = '900 80px -apple-system, sans-serif';
+      const gradient = ctx.createLinearGradient(140, 340, 400, 440);
+      gradient.addColorStop(0, '#6C63FF');
+      gradient.addColorStop(1, '#FF6584');
+      ctx.fillStyle = gradient;
+      ctx.fillText(ddayText, 270, 420);
+
+      // 설명
+      ctx.fillStyle = '#888';
+      ctx.font = '400 18px -apple-system, sans-serif';
+      ctx.fillText(document.getElementById('resultLabel').textContent, 270, 480);
+
+      // 구분선
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(120, 520);
+      ctx.lineTo(420, 520);
+      ctx.stroke();
+
+      // 상세 정보
+      ctx.fillStyle = '#666';
+      ctx.font = '400 16px -apple-system, sans-serif';
+      const absDays = Math.abs(currentDays);
+      const details = [
+        `${Math.floor(absDays / 7).toLocaleString()}주`,
+        `${(absDays * 24).toLocaleString()}시간`,
+        `${(absDays * 24 * 60).toLocaleString()}분`,
+      ];
+      ctx.fillText(details.join('  |  '), 270, 560);
+
+      // 재미 요소
+      ctx.font = '600 16px -apple-system, sans-serif';
+      ctx.fillStyle = '#6C63FF';
+      ctx.fillText(`심장이 ${(absDays * 72 * 60).toLocaleString()}번 뛰었습니다`, 270, 640);
+      ctx.fillText(`숨을 ${(absDays * 20000).toLocaleString()}번 쉬었습니다`, 270, 680);
+
+      // 워터마크
+      ctx.fillStyle = '#444';
+      ctx.font = '400 14px -apple-system, sans-serif';
+      ctx.fillText('D-Day 계산기', 270, 880);
+
+      // 다운로드
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `dday-${ddayDate.value}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('이미지가 저장되었습니다!');
+      });
+    }
+
+    // ====== 5. 위젯 코드 ======
+    function renderWidget() {
+      const name = encodeURIComponent(currentName);
+      const date = ddayDate.value;
+      const code = `<iframe src="${location.origin}${location.pathname}?date=${date}&name=${name}&embed=1" width="300" height="200" frameborder="0" style="border-radius:12px"></iframe>`;
+      document.getElementById('widgetCode').textContent = code;
+    }
+
+    function copyWidget() {
+      navigator.clipboard.writeText(document.getElementById('widgetCode').textContent);
+      showToast('위젯 코드가 복사되었습니다!');
+    }
+
+    // ====== 6. 오늘이 특별한 이유 ======
+    function renderTodaySpecial() {
+      const now = new Date();
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      const dayOfYear = Math.ceil((now - startOfYear) / (1000*60*60*24));
+      const daysLeft = (isLeapYear(now.getFullYear()) ? 366 : 365) - dayOfYear;
+
+      const month = now.getMonth() + 1;
+      const date = now.getDate();
+      const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+      const dayName = dayNames[now.getDay()];
+
+      const facts = [
+        `${now.getFullYear()}년의 ${dayOfYear}번째 날 (남은 ${daysLeft}일)`,
+        `${month}월 ${Math.ceil(date / 7)}번째 ${dayName}요일`,
+      ];
+
+      // 특별한 숫자 날 체크
+      const specialNums = [100, 200, 365, 500, 777, 1000, 1234, 2000, 3000, 5000, 10000];
+      const saved = JSON.parse(localStorage.getItem('ddays') || '[]');
+      saved.forEach(item => {
+        const target = new Date(item.date + 'T00:00:00');
+        const today = new Date(); today.setHours(0,0,0,0);
+        const diff = Math.abs(Math.ceil((today - target) / (1000*60*60*24)));
+        if (specialNums.includes(diff)) {
+          facts.push(`"${item.name}"으로부터 ${diff}일째!`);
+        }
+      });
+
+      document.getElementById('todayContent').innerHTML = facts.map(f => `<p style="margin:4px 0">${f}</p>`).join('');
+    }
+
+    function isLeapYear(y) { return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
+
+    function formatDate(d) {
+      return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+    }
+
+    // 저장하기
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const name = ddayName.value || formatDate(new Date(ddayDate.value));
+      const date = ddayDate.value;
+      if (!date) return;
+      const saved = JSON.parse(localStorage.getItem('ddays') || '[]');
+      if (saved.some(s => s.date === date && s.name === name)) { showToast('이미 저장된 디데이입니다'); return; }
+      saved.push({ name, date, id: Date.now() });
+      localStorage.setItem('ddays', JSON.stringify(saved));
+      renderSaved();
+      showToast('저장되었습니다!');
+    });
+
+    // 링크 복사
+    document.getElementById('shareBtn').addEventListener('click', () => {
+      const name = ddayName.value || '';
+      const date = ddayDate.value;
+      const start = startDateEl.value !== todayStr ? `&start=${startDateEl.value}` : '';
+      const url = `${location.origin}${location.pathname}?date=${date}&name=${encodeURIComponent(name)}${start}`;
+      navigator.clipboard.writeText(url);
+      showToast('링크가 복사되었습니다!');
+    });
+
+    function renderSaved() {
+      renderTimeline();
+    }
+
+    function deleteDday(id) {
+      const saved = JSON.parse(localStorage.getItem('ddays') || '[]');
+      localStorage.setItem('ddays', JSON.stringify(saved.filter(s => s.id !== id)));
+      renderSaved();
+      renderTimeline();
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1500);
+    }
+
+    // 초기화
+    renderSaved();
+  </script>
+</body>
+</html>
