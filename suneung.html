@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>수능 디데이 계산기 - 2026 대학수학능력시험 카운트다운</title>
+<meta name="description" content="수능 디데이 계산기로 대학수학능력시험까지 남은 날짜를 확인하세요. 실시간 카운트다운, 과목별 시간표, 연도별 수능 날짜 확인. 2025~2030학년도 수능 디데이.">
+<meta name="keywords" content="수능 디데이, 수능 카운트다운, 대학수학능력시험, 수능 날짜, 수능 시간표, 2026 수능">
+<meta property="og:title" content="수능 디데이 계산기 - 2026 대학수학능력시험 카운트다운">
+<meta property="og:description" content="수능 디데이 계산기로 대학수학능력시험까지 남은 날짜를 확인하세요. 실시간 카운트다운, 과목별 시간표, 연도별 수능 날짜 확인.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<link rel="canonical" href="https://dday.github.io/suneung.html">
+<link rel="stylesheet" href="shared.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "수능 디데이 계산기",
+  "description": "대학수학능력시험까지 남은 날짜를 실시간으로 확인하는 카운트다운 계산기",
+  "url": "https://dday.github.io/suneung.html",
+  "applicationCategory": "UtilityApplication",
+  "operatingSystem": "All",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+  "inLanguage": "ko"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "수능이란 무엇인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "수능(대학수학능력시험)은 대한민국의 대학 입학을 위해 한국교육과정평가원이 주관하는 표준화된 시험입니다. 매년 11월에 실시되며, 국어, 수학, 영어, 한국사, 탐구, 제2외국어/한문 영역으로 구성됩니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "수능 날짜는 어떻게 정해지나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "수능은 매년 11월 셋째 주 목요일에 실시됩니다. 교육부가 공식적으로 시행일을 확정하며, 통상 해당 연도 초에 정확한 날짜가 발표됩니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "수능 시험 시간은 어떻게 되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "수능은 오전 8시 40분 국어 영역을 시작으로, 수학(10:30), 영어(13:10), 한국사(14:50), 탐구(15:35, 16:07), 제2외국어/한문(17:05) 순서로 진행됩니다. 전체 시험은 약 8시간 이상 소요됩니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "수능 디데이 계산기는 어떻게 사용하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "페이지에 접속하면 자동으로 다가오는 수능까지 남은 일수와 실시간 카운트다운이 표시됩니다. 연도를 선택하면 해당 학년도 수능까지의 디데이를 확인할 수 있으며, 과목별 시험 시간표도 함께 확인할 수 있습니다."
+      }
+    }
+  ]
+}
+</script>
+<style>
+  .year-chips { margin-bottom: 16px; }
+  .countdown-big {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .countdown-big .unit {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 6px;
+    text-align: center;
+  }
+  .countdown-big .num {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .countdown-big .lbl {
+    font-size: 11px;
+    color: var(--text-sub);
+    margin-top: 6px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .schedule-row {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .schedule-row:last-child { border-bottom: none; }
+  .schedule-row .t {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-sub);
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .schedule-row .s {
+    font-weight: 700;
+  }
+  .schedule-row .d {
+    color: var(--text-sub);
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .quote {
+    text-align: center;
+    padding: 24px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--text);
+    font-style: italic;
+  }
+  .quote-author {
+    color: var(--text-sub);
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 8px;
+    font-style: normal;
+  }
+  .date-display {
+    text-align: center;
+    color: var(--text-sub);
+    font-size: 14px;
+    margin-top: 12px;
+    font-weight: 600;
+  }
+  .quote-refresh {
+    margin-top: 12px;
+    text-align: center;
+  }
+  .quote-refresh button {
+    font-size: 12px;
+    color: var(--text-sub);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--bg);
+  }
+  .quote-refresh button:hover { color: var(--text); }
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .seo-section {
+    margin-top: 32px;
+    padding: 0 4px;
+  }
+  .seo-section h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 28px 0 12px;
+  }
+  .seo-section h2:first-child {
+    margin-top: 0;
+  }
+  .seo-section p {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-sub);
+    margin: 0 0 12px;
+  }
+  @media (max-width: 480px) {
+    .countdown-big .num { font-size: 24px; }
+    .schedule-row { grid-template-columns: 64px 1fr auto; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="nav">
+    <a href="index.html">디데이 계산</a>
+    <a href="couple.html">커플/기념일</a>
+    <a href="timeline.html">타임라인</a>
+    <a href="suneung.html" class="active">수능 디데이</a>
+    <a href="military.html">전역일</a>
+    <a href="age.html">만나이</a>
+    <a href="event.html">이벤트</a>
+  </nav>
+
+  <header class="page-header">
+    <h1>수능 디데이</h1>
+    <p id="sub-title">대학수학능력시험까지 남은 시간</p>
+  </header>
+
+  <!-- D-Day Card -->
+  <div class="card">
+    <div class="big-number-wrap">
+      <div class="big-number" id="dday"></div>
+      <div class="big-number-suffix" id="dday-date"></div>
+    </div>
+    <div class="countdown-big">
+      <div class="unit"><div class="num" id="cd-d">00</div><div class="lbl">일</div></div>
+      <div class="unit"><div class="num" id="cd-h">00</div><div class="lbl">시간</div></div>
+      <div class="unit"><div class="num" id="cd-m">00</div><div class="lbl">분</div></div>
+      <div class="unit"><div class="num" id="cd-s">00</div><div class="lbl">초</div></div>
+    </div>
+  </div>
+
+  <!-- 연도 선택 -->
+  <div class="card">
+    <div class="card-title">연도 선택</div>
+    <div class="chip-row year-chips" id="year-chips"></div>
+  </div>
+
+  <!-- 시간표 -->
+  <div class="card">
+    <div class="card-title">과목별 시험 시간표</div>
+    <div id="schedule"></div>
+  </div>
+
+  <!-- 명언 -->
+  <div class="card">
+    <div class="card-title">오늘의 한 마디</div>
+    <div class="quote" id="quote">
+      "노력의 대가는 반드시 돌아온다."
+      <div class="quote-author" id="quote-author">— 익명</div>
+    </div>
+    <div class="quote-refresh">
+      <button onclick="renderQuote()">다른 메시지 보기</button>
+    </div>
+  </div>
+
+  <!-- 공유 -->
+  <div class="btn-row">
+    <button class="btn" onclick="doShare()">공유하기</button>
+    <button class="btn secondary" onclick="downloadCard()">이미지 저장</button>
+  </div>
+  <div class="sns-share">
+    <button class="sns-btn" onclick="snsShare('kakao', {title:'수능 디데이', text:'수능까지 남은 날짜를 확인하세요!'})">
+      <svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.58 2 11c0 2.83 1.87 5.32 4.68 6.73l-1.2 4.46c-.1.36.31.65.63.44L10.7 19.5c.43.03.86.05 1.3.05 5.5 0 10-3.58 10-8s-4.5-8-10-8z"/></svg>
+      카카오톡
+    </button>
+    <button class="sns-btn" onclick="snsShare('twitter', {title:'수능 디데이', text:'수능까지 남은 날짜를 확인하세요!'})">
+      <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      X
+    </button>
+    <button class="sns-btn" onclick="snsShare('facebook', {title:'수능 디데이', text:'수능까지 남은 날짜를 확인하세요!'})">
+      <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      페이스북
+    </button>
+    <button class="sns-btn" onclick="snsShare('copy', {title:'수능 디데이', text:'수능까지 남은 날짜를 확인하세요!'})">
+      <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+      링크 복사
+    </button>
+  </div>
+
+  <!-- SEO Content Section -->
+  <article class="seo-section">
+    <h2>수능 디데이 계산기란?</h2>
+    <p>수능 디데이 계산기는 대학수학능력시험(수능)까지 남은 날짜를 실시간으로 확인할 수 있는 온라인 도구입니다. 일, 시간, 분, 초 단위의 정밀한 카운트다운을 제공하며, 연도별 수능 날짜 확인과 과목별 시험 시간표 조회 기능을 함께 제공합니다. 수험생과 학부모가 남은 준비 기간을 한눈에 파악하고 학습 계획을 세우는 데 도움을 줍니다.</p>
+
+    <h2>수능 날짜는 어떻게 정해지나요?</h2>
+    <p>대학수학능력시험은 매년 11월 셋째 주 목요일에 실시됩니다. 이 규칙은 교육부에서 정한 것으로, 수험생들이 충분한 학습 기간을 확보하고 대학 입시 일정과 조화를 이룰 수 있도록 설계되었습니다. 다만, 특수한 상황(자연재해, 사회적 이슈 등)에 따라 시험일이 변경될 수 있으며, 정확한 날짜는 매년 교육부 공식 발표를 통해 확정됩니다.</p>
+
+    <h2>수능 시험 시간표</h2>
+    <p>수능은 오전 8시 40분 국어 영역(80분)을 시작으로, 수학(100분), 점심시간 이후 영어(70분), 한국사 및 탐구 영역(각 30분), 마지막으로 제2외국어/한문(40분) 순서로 진행됩니다. 전체 시험은 오후 5시 45분경에 종료되며, 하루 동안 총 6개 영역에 걸쳐 약 8시간 이상 집중력을 유지해야 하는 장시간 시험입니다.</p>
+  </article>
+
+
+</div>
+<footer>D-Day 계산기 &copy; 2025</footer>
+
+<script src="shared.js"></script>
+<script>
+
+
+// ----- 수능 날짜: 매년 11월 셋째 주 목요일 -----
+function getSuneungDate(year){
+  // 11월의 첫째 날
+  const first = new Date(year, 10, 1);
+  const firstDay = first.getDay(); // 0=일, 4=목
+  // 첫째 주 목요일까지의 offset
+  const firstThuOffset = (4 - firstDay + 7) % 7;
+  // 셋째 주 목요일 = 첫째 주 목요일 + 14일
+  const day = 1 + firstThuOffset + 14;
+  return new Date(year, 10, day, 8, 40, 0);
+}
+
+const SUBJECTS = [
+  { t: '08:40', s: '국어', d: '80분' },
+  { t: '10:30', s: '수학', d: '100분' },
+  { t: '13:10', s: '영어', d: '70분' },
+  { t: '14:50', s: '한국사', d: '30분' },
+  { t: '15:35', s: '탐구 1', d: '30분' },
+  { t: '16:07', s: '탐구 2', d: '30분' },
+  { t: '17:05', s: '제2외국어/한문', d: '40분' },
+];
+
+const QUOTES = [
+  { t: '노력은 절대 배신하지 않는다.', a: '익명' },
+  { t: '오늘 걷지 않으면 내일은 뛰어야 한다.', a: '익명' },
+  { t: '꿈꾸는 자는 이길 수 있다.', a: '익명' },
+  { t: '하루하루가 쌓여 1년이 된다. 오늘을 이기자.', a: '익명' },
+  { t: '고통은 잠깐이지만 영광은 영원하다.', a: '랜스 암스트롱' },
+  { t: '가장 큰 영광은 넘어지지 않는 것이 아니라, 넘어질 때마다 일어서는 것이다.', a: '공자' },
+  { t: '수능 끝난 그 날의 해방감을 상상해라.', a: '익명' },
+  { t: '지금 잠들면 꿈을 꾸지만, 지금 공부하면 꿈을 이룬다.', a: '하버드 도서관' },
+  { t: '포기하고 싶을 때, 왜 시작했는지 기억하라.', a: '익명' },
+  { t: '당신의 한계는 당신이 정한다.', a: '익명' },
+  { t: '결과보다 과정이 너를 만든다. 그러니 하루를 아끼지 마라.', a: '익명' },
+  { t: '가장 느린 사람도 목표를 잃지 않는다면, 가장 빠른 사람보다 먼저 도착한다.', a: '레싱' },
+];
+
+// ----- 상태 -----
+const params = new URLSearchParams(location.search);
+const currentYear = new Date().getFullYear();
+let selectedYear = parseInt(params.get('year')) || currentYear + 1;
+let suneungDate = getSuneungDate(selectedYear);
+
+// 지난 연도면 다음 연도로
+if (suneungDate < new Date() && !params.get('year')) {
+  selectedYear = currentYear + 1;
+  suneungDate = getSuneungDate(selectedYear);
+}
+
+function renderYearChips(){
+  const wrap = document.getElementById('year-chips');
+  wrap.innerHTML = '';
+  const years = [];
+  for (let y = currentYear; y <= currentYear + 5; y++) years.push(y);
+  years.forEach(y => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (y === selectedYear ? ' active' : '');
+    b.textContent = y + '학년도';
+    b.onclick = () => {
+      selectedYear = y;
+      suneungDate = getSuneungDate(y);
+      history.replaceState(null, '', '?year=' + y);
+      renderYearChips();
+      updateAll();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+function renderSchedule(){
+  const el = document.getElementById('schedule');
+  el.innerHTML = '';
+  SUBJECTS.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'schedule-row';
+    row.innerHTML = `<div class="t">${s.t}</div><div class="s">${s.s}</div><div class="d">${s.d}</div>`;
+    el.appendChild(row);
+  });
+}
+
+function renderQuote(){
+  const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  document.getElementById('quote').innerHTML = `"${q.t}"<div class="quote-author" id="quote-author">— ${q.a}</div>`;
+}
+
+function updateCountdown(){
+  const now = new Date();
+  const diff = suneungDate - now;
+  const days = Math.floor(diff / (24*60*60*1000));
+  const hours = Math.floor((diff % (24*60*60*1000)) / (60*60*1000));
+  const mins = Math.floor((diff % (60*60*1000)) / (60*1000));
+  const secs = Math.floor((diff % (60*1000)) / 1000);
+
+  const dday = daysBetween(now, suneungDate);
+  document.getElementById('dday').textContent = fmtDday(dday);
+  document.getElementById('cd-d').textContent = pad(Math.max(0, days));
+  document.getElementById('cd-h').textContent = pad(Math.max(0, hours));
+  document.getElementById('cd-m').textContent = pad(Math.max(0, mins));
+  document.getElementById('cd-s').textContent = pad(Math.max(0, secs));
+}
+
+function updateAll(){
+  const d = suneungDate;
+  const dayNames = ['일','월','화','수','목','금','토'];
+  const dateStr = `${d.getFullYear()}. ${pad(d.getMonth()+1)}. ${pad(d.getDate())} (${dayNames[d.getDay()]})`;
+  document.getElementById('dday-date').textContent = dateStr;
+  document.getElementById('sub-title').textContent = `${selectedYear}학년도 대학수학능력시험`;
+  updateCountdown();
+}
+
+function doShare(){
+  const dday = daysBetween(new Date(), suneungDate);
+  shareOrCopy(`${selectedYear}학년도 수능 ${fmtDday(dday)}`,
+    `${selectedYear}학년도 수능까지 ${fmtDday(dday)}!`);
+}
+
+function downloadCard(){
+  const dday = daysBetween(new Date(), suneungDate);
+  const url = generateShareCard({
+    title: `${selectedYear}학년도 수능까지`,
+    bigText: fmtDday(dday),
+    subText: document.getElementById('dday-date').textContent,
+    footer: 'D-Day Calculator · 수능 디데이'
+  });
+  downloadShareCard(url, `수능-${selectedYear}.png`);
+}
+
+renderYearChips();
+renderSchedule();
+renderQuote();
+updateAll();
+setInterval(updateCountdown, 1000);
+
+showCtaBanner('.container', 'suneung.html', '다른 연도의 수능 디데이도 확인해보세요!');
+</script>
+</body>
+</html>

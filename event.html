@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>이벤트 디데이 - 크리스마스, 설날, 추석 카운트다운</title>
+<meta name="description" content="크리스마스, 새해, 설날, 추석 등 주요 이벤트까지 남은 날짜를 확인하세요. 실시간 카운트다운, 이미지 공유 기능 제공.">
+<meta name="keywords" content="크리스마스 디데이, 설날 디데이, 추석 디데이, 새해 카운트다운, 이벤트 디데이, 공휴일 디데이">
+<meta property="og:title" content="이벤트 디데이 - 크리스마스, 설날, 추석 카운트다운">
+<meta property="og:description" content="크리스마스, 새해, 설날, 추석 등 주요 이벤트까지 남은 날짜를 확인하세요. 실시간 카운트다운, 이미지 공유 기능 제공.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<link rel="canonical" href="https://dday.github.io/event.html">
+<link rel="stylesheet" href="shared.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "이벤트 디데이 계산기",
+  "description": "크리스마스, 설날, 추석 등 주요 이벤트까지 남은 날짜 카운트다운",
+  "url": "https://dday.github.io/event.html",
+  "applicationCategory": "UtilityApplication",
+  "operatingSystem": "All",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+  "inLanguage": "ko"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "이벤트 디데이란 무엇인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "이벤트 디데이는 크리스마스, 설날, 추석, 새해 등 주요 이벤트와 공휴일까지 남은 날짜를 실시간으로 카운트다운해주는 서비스입니다. 일, 시간, 분, 초 단위로 정확한 남은 시간을 확인할 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "음력 명절 날짜는 어떻게 변환하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "설날(음력 1월 1일)과 추석(음력 8월 15일) 등 음력 기반 명절은 매년 양력 날짜가 달라집니다. 본 서비스는 2024년부터 2030년까지의 음력-양력 변환 데이터를 내장하여 정확한 양력 날짜를 자동으로 계산합니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "한국의 주요 공휴일에는 어떤 것들이 있나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "한국의 주요 공휴일로는 신정(1월 1일), 설날(음력 1월 1일), 삼일절(3월 1일), 어린이날(5월 5일), 부처님 오신 날(음력 4월 8일), 현충일(6월 6일), 광복절(8월 15일), 추석(음력 8월 15일), 개천절(10월 3일), 한글날(10월 9일), 크리스마스(12월 25일) 등이 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "디데이 카운트다운 결과를 공유할 수 있나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "네, 공유하기 버튼을 통해 카카오톡, 문자 등으로 디데이 정보를 공유할 수 있으며, 이미지 저장 버튼으로 카운트다운 카드를 이미지 파일로 다운로드하여 SNS에 공유할 수도 있습니다."
+      }
+    }
+  ]
+}
+</script>
+<style>
+  .event-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 480px) {
+    .event-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .event-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 14px;
+    text-align: center;
+    transition: all .15s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .event-card:hover {
+    background: var(--card-hover);
+    border-color: #333;
+    transform: translateY(-2px);
+  }
+  .event-card.active {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, rgba(108,99,255,0.08), var(--card));
+  }
+  .event-card .name {
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+    margin-top: 4px;
+  }
+  .event-card .dday-mini {
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .event-card .date-mini {
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--text-sub);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-wrap { text-align: center; }
+  .hero-name {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+  }
+  .hero-desc {
+    color: var(--text-sub);
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 24px 2px 12px;
+  }
+  .seo-section {
+    margin-top: 40px;
+    padding: 0 2px;
+  }
+  .seo-section h2 {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 28px 0 10px;
+    color: var(--text);
+  }
+  .seo-section h2:first-child {
+    margin-top: 0;
+  }
+  .seo-section p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-sub);
+    margin-bottom: 8px;
+  }
+  .seo-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 12px;
+  }
+  .seo-section ul li {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-sub);
+    padding-left: 16px;
+    position: relative;
+  }
+  .seo-section ul li::before {
+    content: '·';
+    position: absolute;
+    left: 4px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="nav">
+    <a href="index.html">디데이 계산</a>
+    <a href="couple.html">커플/기념일</a>
+    <a href="timeline.html">타임라인</a>
+    <a href="suneung.html">수능 디데이</a>
+    <a href="military.html">전역일</a>
+    <a href="age.html">만나이</a>
+    <a href="event.html" class="active">이벤트</a>
+  </nav>
+
+  <header class="page-header">
+    <h1>이벤트 디데이</h1>
+    <p>기다려지는 특별한 날들</p>
+  </header>
+
+  <!-- 선택된 이벤트 카운트다운 -->
+  <div class="card" id="hero-card">
+    <div class="hero-wrap">
+      <div class="hero-name" id="hero-name"></div>
+      <div class="hero-desc" id="hero-desc"></div>
+      <div class="big-number" id="hero-dday"></div>
+      <div class="big-number-suffix" id="hero-date"></div>
+    </div>
+    <div class="countdown">
+      <div class="unit"><div class="num" id="cd-d">00</div><div class="lbl">일</div></div>
+      <div class="unit"><div class="num" id="cd-h">00</div><div class="lbl">시간</div></div>
+      <div class="unit"><div class="num" id="cd-m">00</div><div class="lbl">분</div></div>
+      <div class="unit"><div class="num" id="cd-s">00</div><div class="lbl">초</div></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" onclick="doShare()">공유하기</button>
+    <button class="btn secondary" onclick="downloadCard()">이미지 저장</button>
+  </div>
+  <div class="sns-share">
+    <button class="sns-btn" onclick="snsShare('kakao', {title:'이벤트 디데이', text:'다음 이벤트까지 남은 날짜!'})">
+      <svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.58 2 11c0 2.83 1.87 5.32 4.68 6.73l-1.2 4.46c-.1.36.31.65.63.44L10.7 19.5c.43.03.86.05 1.3.05 5.5 0 10-3.58 10-8s-4.5-8-10-8z"/></svg>
+      카카오톡
+    </button>
+    <button class="sns-btn" onclick="snsShare('twitter', {title:'이벤트 디데이', text:'다음 이벤트까지 남은 날짜!'})">
+      <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      X
+    </button>
+    <button class="sns-btn" onclick="snsShare('facebook', {title:'이벤트 디데이', text:'다음 이벤트까지 남은 날짜!'})">
+      <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      페이스북
+    </button>
+    <button class="sns-btn" onclick="snsShare('copy', {title:'이벤트 디데이', text:'다음 이벤트까지 남은 날짜!'})">
+      <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+      링크 복사
+    </button>
+  </div>
+
+  <div class="section-title">전체 이벤트</div>
+  <div class="event-grid" id="event-grid"></div>
+
+  <!-- SEO 콘텐츠 -->
+  <div class="seo-section">
+    <h2>이벤트 디데이 계산기란?</h2>
+    <p>이벤트 디데이 계산기는 크리스마스, 새해, 설날, 추석 등 기대되는 이벤트와 공휴일까지 남은 날짜를 실시간으로 확인할 수 있는 온라인 도구입니다. 일, 시간, 분, 초 단위의 정밀한 카운트다운을 제공하며, 결과를 이미지로 저장하거나 SNS로 공유할 수 있습니다.</p>
+
+    <h2>한국의 주요 공휴일과 이벤트</h2>
+    <p>한국에는 양력과 음력에 기반한 다양한 공휴일과 기념일이 있습니다. 본 서비스에서 카운트다운을 제공하는 주요 이벤트는 다음과 같습니다.</p>
+    <ul>
+      <li>새해 (1월 1일) - 한 해의 시작을 축하하는 날</li>
+      <li>설날 (음력 1월 1일) - 한국 최대의 전통 명절</li>
+      <li>밸런타인데이 (2월 14일) - 사랑을 전하는 날</li>
+      <li>화이트데이 (3월 14일) - 사탕을 주고받는 날</li>
+      <li>어린이날 (5월 5일) - 어린이를 위한 국가 공휴일</li>
+      <li>부처님 오신 날 (음력 4월 8일) - 불교 기념일</li>
+      <li>광복절 (8월 15일) - 대한민국 독립 기념일</li>
+      <li>추석 (음력 8월 15일) - 한국의 추수감사절</li>
+      <li>한글날 (10월 9일) - 한글 창제를 기념하는 날</li>
+      <li>할로윈 (10월 31일) - 전 세계적으로 즐기는 축제</li>
+      <li>빼빼로데이 (11월 11일) - 빼빼로를 주고받는 날</li>
+      <li>크리스마스 (12월 25일) - 연말 최대 이벤트</li>
+    </ul>
+
+    <h2>음력 명절 날짜</h2>
+    <p>설날과 추석은 음력 달력에 기반하므로 매년 양력 날짜가 달라집니다. 설날은 음력 1월 1일로 양력 1월 말에서 2월 중순 사이에, 추석은 음력 8월 15일로 양력 9월 초에서 10월 초 사이에 위치합니다. 부처님 오신 날 역시 음력 4월 8일로 양력 5월 초에서 6월 초 사이에 해당합니다. 본 서비스는 2024년부터 2030년까지의 음력-양력 변환 데이터를 내장하여 정확한 카운트다운을 제공합니다.</p>
+  </div>
+
+
+</div>
+<footer>D-Day 계산기 &copy; 2025</footer>
+
+<script src="shared.js"></script>
+<script>
+
+// ----- 음력 변환기 (간소화: 하드코딩된 매핑) -----
+// 주요 한국 명절의 양력 날짜 (2024~2030)
+const LUNAR_DATES = {
+  seollal: { // 설날
+    2024: '2024-02-10', 2025: '2025-01-29', 2026: '2026-02-17',
+    2027: '2027-02-07', 2028: '2028-01-27', 2029: '2029-02-13',
+    2030: '2030-02-03',
+  },
+  chuseok: { // 추석
+    2024: '2024-09-17', 2025: '2025-10-06', 2026: '2026-09-25',
+    2027: '2027-09-15', 2028: '2028-10-03', 2029: '2029-09-22',
+    2030: '2030-09-12',
+  },
+  buddha: { // 부처님 오신 날
+    2024: '2024-05-15', 2025: '2025-05-05', 2026: '2026-05-24',
+    2027: '2027-05-13', 2028: '2028-05-02', 2029: '2029-05-20',
+    2030: '2030-05-09',
+  },
+};
+
+// ----- 이벤트 정의 -----
+// getDate: 현재 시점에서 아직 지나지 않은 가장 가까운 해의 날짜 반환
+function nextSolar(month, day){
+  const now = new Date();
+  let y = now.getFullYear();
+  let d = new Date(y, month - 1, day, 0, 0, 0);
+  if (d <= now) d = new Date(y + 1, month - 1, day, 0, 0, 0);
+  return d;
+}
+function nextLunar(key){
+  const now = new Date();
+  const table = LUNAR_DATES[key];
+  const years = Object.keys(table).map(Number).sort();
+  for (const y of years) {
+    const d = new Date(table[y] + 'T00:00:00');
+    if (d > now) return d;
+  }
+  return new Date(table[years[years.length-1]]);
+}
+
+const EVENTS = [
+  { id: 'christmas',  name: '크리스마스',     desc: '12월 25일',       get: () => nextSolar(12, 25) },
+  { id: 'newyear',    name: '새해',           desc: '1월 1일',         get: () => nextSolar(1, 1) },
+  { id: 'seollal',    name: '설날',           desc: '음력 1월 1일',    get: () => nextLunar('seollal') },
+  { id: 'chuseok',    name: '추석',           desc: '음력 8월 15일',   get: () => nextLunar('chuseok') },
+  { id: 'childrens',  name: '어린이날',       desc: '5월 5일',         get: () => nextSolar(5, 5) },
+  { id: 'buddha',     name: '부처님 오신 날', desc: '음력 4월 8일',    get: () => nextLunar('buddha') },
+  { id: 'liberation', name: '광복절',         desc: '8월 15일',        get: () => nextSolar(8, 15) },
+  { id: 'hangul',     name: '한글날',         desc: '10월 9일',        get: () => nextSolar(10, 9) },
+  { id: 'valentine',  name: '밸런타인데이',   desc: '2월 14일',        get: () => nextSolar(2, 14) },
+  { id: 'whiteday',   name: '화이트데이',     desc: '3월 14일',        get: () => nextSolar(3, 14) },
+  { id: 'pepero',     name: '빼빼로데이',     desc: '11월 11일',       get: () => nextSolar(11, 11) },
+  { id: 'halloween',  name: '할로윈',         desc: '10월 31일',       get: () => nextSolar(10, 31) },
+];
+
+// URL 파라미터
+const params = new URLSearchParams(location.search);
+let selected = params.get('type') || localStorage.getItem('event-type') || 'christmas';
+if (!EVENTS.find(e => e.id === selected)) selected = 'christmas';
+
+function fmtDate(d){
+  if (!d) return '-';
+  const dayNames = ['일','월','화','수','목','금','토'];
+  return `${d.getFullYear()}. ${pad(d.getMonth()+1)}. ${pad(d.getDate())} (${dayNames[d.getDay()]})`;
+}
+
+function renderGrid(){
+  const grid = document.getElementById('event-grid');
+  grid.innerHTML = '';
+  const now = new Date();
+  EVENTS.forEach(ev => {
+    const d = ev.get();
+    const dday = daysBetween(now, d);
+    const card = document.createElement('div');
+    card.className = 'event-card' + (ev.id === selected ? ' active' : '');
+    card.innerHTML = `
+      <div class="name">${ev.name}</div>
+      <div class="dday-mini">${fmtDday(dday)}</div>
+      <div class="date-mini">${pad(d.getMonth()+1)}. ${pad(d.getDate())}</div>
+    `;
+    card.onclick = () => {
+      selected = ev.id;
+      localStorage.setItem('event-type', ev.id);
+      history.replaceState(null, '', '?type=' + ev.id);
+      renderGrid();
+      updateHero();
+    };
+    grid.appendChild(card);
+  });
+}
+
+function getSelectedEvent(){
+  return EVENTS.find(e => e.id === selected);
+}
+
+function updateHero(){
+  const ev = getSelectedEvent();
+  const d = ev.get();
+  document.getElementById('hero-name').textContent = ev.name;
+  document.getElementById('hero-desc').textContent = ev.desc;
+  document.getElementById('hero-date').textContent = fmtDate(d);
+  updateCountdown();
+}
+
+function updateCountdown(){
+  const ev = getSelectedEvent();
+  const d = ev.get();
+  const now = new Date();
+  const diff = d - now;
+  const days = Math.floor(diff / (24*60*60*1000));
+  const hours = Math.floor((diff % (24*60*60*1000)) / (60*60*1000));
+  const mins = Math.floor((diff % (60*60*1000)) / (60*1000));
+  const secs = Math.floor((diff % (60*1000)) / 1000);
+
+  const dday = daysBetween(now, d);
+  document.getElementById('hero-dday').textContent = fmtDday(dday);
+  document.getElementById('cd-d').textContent = pad(Math.max(0, days));
+  document.getElementById('cd-h').textContent = pad(Math.max(0, hours));
+  document.getElementById('cd-m').textContent = pad(Math.max(0, mins));
+  document.getElementById('cd-s').textContent = pad(Math.max(0, secs));
+}
+
+function doShare(){
+  const ev = getSelectedEvent();
+  const d = ev.get();
+  const dday = daysBetween(new Date(), d);
+  shareOrCopy(`${ev.name} ${fmtDday(dday)}`,
+    `${ev.name}까지 ${fmtDday(dday)}!`);
+}
+function downloadCard(){
+  const ev = getSelectedEvent();
+  const d = ev.get();
+  const dday = daysBetween(new Date(), d);
+  const url = generateShareCard({
+    title: `${ev.name}까지`,
+    bigText: fmtDday(dday),
+    subText: fmtDate(d),
+    footer: 'D-Day Calculator · 이벤트 디데이'
+  });
+  downloadShareCard(url, `${ev.name}.png`);
+}
+
+renderGrid();
+updateHero();
+setInterval(updateCountdown, 1000);
+// 자정 넘어가면 D-Day 갱신 위해 1분마다 그리드도 새로고침
+setInterval(renderGrid, 60 * 1000);
+
+showCtaBanner('.container', 'event.html', '다른 이벤트 디데이도 확인해보세요!');
+</script>
+</body>
+</html>

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>만나이 계산기 - 한국나이, 만나이, 연나이 변환</title>
+  <meta name="description" content="만나이 계산기로 정확한 나이를 확인하세요. 만나이, 연나이(한국나이) 동시 확인. 생일 카운트다운, 띠, 별자리까지 한 번에.">
+  <meta name="keywords" content="만나이 계산기, 한국나이 계산, 연나이 계산, 나이 계산기, 띠 계산, 별자리 계산">
+  <meta property="og:title" content="만나이 계산기 - 한국나이, 만나이, 연나이 변환">
+  <meta property="og:description" content="만나이 계산기로 정확한 나이를 확인하세요. 만나이, 연나이(한국나이) 동시 확인. 생일 카운트다운, 띠, 별자리까지 한 번에.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ko_KR">
+  <link rel="canonical" href="https://dday.github.io/age.html">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "만나이 계산기",
+    "description": "만나이와 연나이를 정확하게 계산하는 온라인 도구",
+    "url": "https://dday.github.io/age.html",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "All",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+    "inLanguage": "ko"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "만나이란 무엇인가요?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "만나이는 태어난 날을 0세로 시작하여, 생일이 지날 때마다 1살씩 더하는 국제 표준 나이 계산법입니다. 대부분의 국가에서 사용하며, 2023년부터 대한민국에서도 법적·행정적으로 만나이를 기준으로 통일하였습니다."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "만나이와 한국나이(연나이)의 차이는 무엇인가요?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "만나이는 생일 기준으로 계산하여 0세부터 시작하지만, 연나이(한국나이)는 현재 연도에서 태어난 연도를 빼서 계산합니다. 예를 들어 2000년생이 2025년에는 연나이로 25세, 만나이로는 생일 전이면 24세, 생일 후면 25세가 됩니다."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "만나이 통일법이란 무엇인가요?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "만나이 통일법은 2023년 6월 28일부터 시행된 법률로, 법령이나 계약 등에서 나이를 표시할 때 만나이를 기준으로 통일하는 법입니다. 이전에는 한국에서 세는나이, 연나이, 만나이 등 여러 나이 기준이 혼용되어 혼란이 있었으나, 이 법으로 만나이로 통일되었습니다."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "띠와 별자리는 어떻게 결정되나요?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "띠(12지신)는 태어난 연도를 기준으로 12년 주기로 결정됩니다. 쥐, 소, 호랑이, 토끼, 용, 뱀, 말, 양, 원숭이, 닭, 개, 돼지 순입니다. 별자리는 태어난 월과 일을 기준으로 결정되며, 양자리부터 물고기자리까지 12개의 별자리가 있습니다."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .age-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .age-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .age-box .num {
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-variant-numeric: tabular-nums;
+    }
+    .age-box .num-sm {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .age-box .lbl {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .zodiac-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .zodiac-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 14px;
+      text-align: center;
+    }
+    .zodiac-box .name {
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .zodiac-box .sub {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 4px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .trivia-list p {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .trivia-list p:last-child { border-bottom: none; }
+    .trivia-list .year-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin-right: 8px;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+    .empty {
+      text-align: center;
+      color: var(--text-sub);
+      font-size: 14px;
+      padding: 20px 0;
+    }
+    .small-countdown {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .small-countdown .unit {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 6px;
+      text-align: center;
+    }
+    .small-countdown .num {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+    .small-countdown .lbl {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 2px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .birthday-msg {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text-sub);
+      font-weight: 600;
+    }
+    .birthday-msg .dday-txt {
+      color: var(--accent);
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <nav class="nav">
+    <a href="index.html">디데이 계산</a>
+    <a href="couple.html">커플/기념일</a>
+    <a href="timeline.html">타임라인</a>
+    <a href="suneung.html">수능 디데이</a>
+    <a href="military.html">전역일</a>
+    <a href="age.html" class="active">만나이</a>
+    <a href="event.html">이벤트</a>
+  </nav>
+
+  <header class="page-header">
+    <h1>만나이 계산기</h1>
+    <p>생년월일을 입력하면 모든 나이를 한 번에</p>
+  </header>
+
+  <!-- 생년월일 입력 -->
+  <div class="card">
+    <label for="birth-date">생년월일</label>
+    <input type="date" id="birth-date">
+  </div>
+
+  <!-- 나이 결과 -->
+  <div class="card" id="age-card" style="display:none">
+    <div class="card-title">만나이 · 연나이</div>
+    <div class="age-grid">
+      <div class="age-box">
+        <div class="num" id="intl-age">0</div>
+        <div class="lbl">만 나이</div>
+      </div>
+      <div class="age-box">
+        <div class="num-sm" id="kor-age">0</div>
+        <div class="lbl">연 나이</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 살아온 날 -->
+  <div class="card" id="days-card" style="display:none">
+    <div class="card-title">태어난 지</div>
+    <div class="big-number-wrap">
+      <div class="big-number" id="days-lived">0</div>
+      <div class="big-number-suffix">일째</div>
+    </div>
+  </div>
+
+  <!-- 다음 생일 -->
+  <div class="card" id="birthday-card" style="display:none">
+    <div class="card-title">다음 생일까지</div>
+    <div class="small-countdown">
+      <div class="unit"><div class="num" id="bd-d">00</div><div class="lbl">일</div></div>
+      <div class="unit"><div class="num" id="bd-h">00</div><div class="lbl">시간</div></div>
+      <div class="unit"><div class="num" id="bd-m">00</div><div class="lbl">분</div></div>
+    </div>
+    <div class="birthday-msg" id="birthday-msg"></div>
+  </div>
+
+  <!-- 띠/별자리 -->
+  <div class="card" id="zodiac-card" style="display:none">
+    <div class="card-title">띠 · 별자리</div>
+    <div class="zodiac-grid">
+      <div class="zodiac-box">
+        <div class="name" id="animal-name">-띠</div>
+        <div class="sub" style="margin-top:8px">띠 (간지)</div>
+      </div>
+      <div class="zodiac-box">
+        <div class="name" id="zodiac-name">-자리</div>
+        <div class="sub" style="margin-top:8px">별자리</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 그 해의 기록 -->
+  <div class="card" id="trivia-card" style="display:none">
+    <div class="card-title">태어난 해의 기록</div>
+    <div class="trivia-list" id="trivia-list"></div>
+  </div>
+
+  <div class="card empty" id="empty-state">
+    생년월일을 입력해주세요.
+  </div>
+
+  <!-- SEO 콘텐츠 -->
+  <div class="seo-content">
+    <h2>만나이 계산기란?</h2>
+    <p>만나이 계산기는 생년월일을 입력하면 만나이와 연나이를 동시에 계산해주는 온라인 도구입니다. 만나이는 태어난 날을 0세로 시작하여 생일이 지날 때마다 1세씩 더하는 국제 표준 나이 계산법입니다. 반면 연나이는 현재 연도에서 태어난 연도를 빼는 방식으로, 과거 한국에서 주로 사용하던 계산법입니다. 예를 들어, 2000년 6월생이 2025년 3월에는 만나이로 24세, 연나이로 25세가 됩니다.</p>
+
+    <h2>만나이 통일법이란?</h2>
+    <p>2023년 6월 28일부터 시행된 만나이 통일법에 따라, 대한민국의 모든 법령과 행정 절차에서 나이를 표기할 때 만나이를 기준으로 통일되었습니다. 이전에는 세는나이(태어나자마자 1살, 새해마다 +1살), 연나이(현재 연도 - 출생 연도), 만나이 등 여러 기준이 혼용되어 혼란이 있었으나, 이 법 시행으로 행정적·법적 나이는 만나이 기준으로 일원화되었습니다. 다만 일상 대화에서는 여전히 세는나이를 사용하는 경우도 있습니다.</p>
+
+    <h2>띠와 별자리</h2>
+    <p>띠(12지신)는 태어난 해를 기준으로 12년 주기(쥐, 소, 호랑이, 토끼, 용, 뱀, 말, 양, 원숭이, 닭, 개, 돼지)로 결정됩니다. 별자리는 태어난 월과 일에 따라 양자리부터 물고기자리까지 12개 별자리 중 하나로 정해집니다. 이 계산기에서는 생년월일만 입력하면 띠와 별자리를 함께 확인할 수 있습니다.</p>
+  </div>
+</div>
+
+<footer>D-Day 계산기 &copy; 2025</footer>
+
+<script src="shared.js"></script>
+<script>
+
+const ZODIACS = [
+  { s: [1,20], e: [2,18],  n:'물병자리' },
+  { s: [2,19], e: [3,20],  n:'물고기자리' },
+  { s: [3,21], e: [4,19],  n:'양자리' },
+  { s: [4,20], e: [5,20],  n:'황소자리' },
+  { s: [5,21], e: [6,21],  n:'쌍둥이자리' },
+  { s: [6,22], e: [7,22],  n:'게자리' },
+  { s: [7,23], e: [8,22],  n:'사자자리' },
+  { s: [8,23], e: [9,22],  n:'처녀자리' },
+  { s: [9,23], e: [10,22], n:'천칭자리' },
+  { s: [10,23],e: [11,22], n:'전갈자리' },
+  { s: [11,23],e: [12,21], n:'궁수자리' },
+  { s: [12,22],e: [1,19],  n:'염소자리' },
+];
+
+// 연도별 대표 사건 몇 개 (대략 주요 연도)
+const YEAR_EVENTS = {
+  1988: ['서울 올림픽 개최', '한국 최초 올림픽'],
+  1990: ['독일 통일', '인터넷의 해 선언'],
+  1993: ['대전 엑스포 개최', '금융실명제 시행'],
+  1997: ['IMF 외환위기', 'NASA 화성 탐사선 착륙'],
+  1998: ['프랑스 월드컵', 'Google 창립'],
+  2000: ['밀레니엄 시작', '남북정상회담'],
+  2002: ['한일 월드컵 4강', 'iPod 열풍'],
+  2005: ['YouTube 서비스 시작'],
+  2007: ['iPhone 최초 공개'],
+  2008: ['베이징 올림픽', '글로벌 금융위기'],
+  2010: ['iPad 출시', '김연아 올림픽 금메달'],
+  2012: ['강남스타일 열풍', '런던 올림픽'],
+  2014: ['세월호 참사', '알파고 개발 시작'],
+  2016: ['알파고 vs 이세돌', '포켓몬 GO 열풍'],
+  2018: ['평창 동계올림픽', 'BTS 빌보드 1위'],
+  2019: ['기생충 칸 황금종려상'],
+  2020: ['COVID-19 팬데믹'],
+  2022: ['카타르 월드컵', '누리호 발사 성공'],
+  2024: ['파리 올림픽'],
+};
+
+let birthDate = null;
+
+function getAnimal(year){
+  // 1900 = 쥐띠 기준
+  const idx = (year - 1900 + 12000) % 12;
+  // 1900년은 쥐띠이므로 ANIMALS에서 쥐를 index 4로 두었음.
+  // 간단하게: year % 12 → 특정 매핑
+  const map = [
+    { n: '원숭이' }, // 0 → 1908,1920...
+    { n: '닭' },     // 1
+    { n: '개' },
+    { n: '돼지' },
+    { n: '쥐' },     // 4 → 1900,1912
+    { n: '소' },
+    { n: '호랑이' },
+    { n: '토끼' },
+    { n: '용' },
+    { n: '뱀' },
+    { n: '말' },
+    { n: '양' },
+  ];
+  return map[year % 12];
+}
+
+function getZodiac(month, day){
+  for (const z of ZODIACS) {
+    const [sm, sd] = z.s, [em, ed] = z.e;
+    if (sm === em) {
+      if (month === sm && day >= sd && day <= ed) return z;
+    } else if (sm < em) {
+      if ((month === sm && day >= sd) || (month === em && day <= ed)) return z;
+    } else {
+      // 염소자리 (12/22~1/19)
+      if ((month === sm && day >= sd) || (month === em && day <= ed)) return z;
+    }
+  }
+  return ZODIACS[0];
+}
+
+function calcIntlAge(birth, today){
+  let age = today.getFullYear() - birth.getFullYear();
+  const hasHadBirthday =
+    today.getMonth() > birth.getMonth() ||
+    (today.getMonth() === birth.getMonth() && today.getDate() >= birth.getDate());
+  if (!hasHadBirthday) age--;
+  return Math.max(0, age);
+}
+
+function calcKorAge(birth, today){
+  // 연나이 = 올해 - 태어난 해
+  return Math.max(0, today.getFullYear() - birth.getFullYear());
+}
+
+function nextBirthday(birth){
+  const now = new Date();
+  let y = now.getFullYear();
+  let nb = new Date(y, birth.getMonth(), birth.getDate(), 0, 0, 0);
+  if (nb <= now) nb = new Date(y + 1, birth.getMonth(), birth.getDate(), 0, 0, 0);
+  return nb;
+}
+
+function updateAll(){
+  if (!birthDate || isNaN(birthDate)) {
+    ['age-card','days-card','birthday-card','zodiac-card','trivia-card'].forEach(
+      id => document.getElementById(id).style.display = 'none');
+    document.getElementById('empty-state').style.display = '';
+    return;
+  }
+  document.getElementById('empty-state').style.display = 'none';
+  ['age-card','days-card','birthday-card','zodiac-card','trivia-card'].forEach(
+    id => document.getElementById(id).style.display = '');
+
+  const today = new Date();
+  document.getElementById('intl-age').textContent = calcIntlAge(birthDate, today);
+  document.getElementById('kor-age').textContent = calcKorAge(birthDate, today);
+
+  const days = daysBetween(birthDate, today);
+  document.getElementById('days-lived').textContent = days.toLocaleString();
+
+  // 띠
+  const a = getAnimal(birthDate.getFullYear());
+  document.getElementById('animal-name').textContent = a.n + '띠';
+
+  // 별자리
+  const z = getZodiac(birthDate.getMonth() + 1, birthDate.getDate());
+  document.getElementById('zodiac-name').textContent = z.n;
+
+  // 그 해의 기록
+  renderTrivia(birthDate.getFullYear());
+
+  updateBirthdayCountdown();
+}
+
+function renderTrivia(year){
+  const list = document.getElementById('trivia-list');
+  list.innerHTML = '';
+  const events = YEAR_EVENTS[year];
+  if (events && events.length) {
+    events.forEach(e => {
+      const p = document.createElement('p');
+      p.innerHTML = `<span class="year-badge">${year}</span>${e}`;
+      list.appendChild(p);
+    });
+  } else {
+    const p = document.createElement('p');
+    p.innerHTML = `<span class="year-badge">${year}</span>당신이 태어난 해. 세상의 중심이 된 해입니다.`;
+    list.appendChild(p);
+  }
+}
+
+function updateBirthdayCountdown(){
+  if (!birthDate) return;
+  const now = new Date();
+  const nb = nextBirthday(birthDate);
+  const diff = nb - now;
+  const days = Math.floor(diff / (24*60*60*1000));
+  const hours = Math.floor((diff % (24*60*60*1000)) / (60*60*1000));
+  const mins = Math.floor((diff % (60*60*1000)) / (60*1000));
+  document.getElementById('bd-d').textContent = pad(Math.max(0, days));
+  document.getElementById('bd-h').textContent = pad(Math.max(0, hours));
+  document.getElementById('bd-m').textContent = pad(Math.max(0, mins));
+
+  // 오늘이 생일인지
+  const isToday = birthDate.getMonth() === now.getMonth() && birthDate.getDate() === now.getDate();
+  const msg = document.getElementById('birthday-msg');
+  if (isToday) {
+    msg.innerHTML = '<span class="dday-txt">오늘은 당신의 생일입니다!</span>';
+  } else {
+    const dayNames = ['일','월','화','수','목','금','토'];
+    msg.innerHTML = `다음 생일: ${nb.getFullYear()}. ${pad(nb.getMonth()+1)}. ${pad(nb.getDate())} (${dayNames[nb.getDay()]})`;
+  }
+}
+
+document.getElementById('birth-date').addEventListener('change', e => {
+  birthDate = e.target.value ? new Date(e.target.value) : null;
+  localStorage.setItem('age-birth', e.target.value || '');
+  updateAll();
+});
+
+// 복원
+const saved = localStorage.getItem('age-birth');
+if (saved) {
+  document.getElementById('birth-date').value = saved;
+  birthDate = new Date(saved);
+}
+
+updateAll();
+setInterval(updateBirthdayCountdown, 1000);
+</script>
+</body>
+</html>

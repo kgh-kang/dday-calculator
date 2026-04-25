@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>전역일 계산기 - 군대 복무기간, 진급일, 전역일 카운트다운</title>
+<meta name="description" content="전역일 계산기로 군 복무 남은 날짜를 확인하세요. 육군, 해군, 공군, 해병대 전역일 자동 계산. 복무 진행률, 계급별 진급일까지 한눈에.">
+<meta name="keywords" content="전역일 계산기, 군대 전역일, 복무기간 계산, 육군 전역일, 해군 전역일, 공군 전역일, 해병대 전역일, 진급일 계산">
+<meta property="og:title" content="전역일 계산기 - 군대 복무기간, 진급일, 전역일 카운트다운">
+<meta property="og:description" content="전역일 계산기로 군 복무 남은 날짜를 확인하세요. 육군, 해군, 공군, 해병대 전역일 자동 계산. 복무 진행률, 계급별 진급일까지 한눈에.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<link rel="canonical" href="https://dday.github.io/military.html">
+<link rel="stylesheet" href="shared.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "전역일 계산기",
+  "description": "군 복무 전역일과 진급일을 자동으로 계산하는 도구",
+  "url": "https://dday.github.io/military.html",
+  "applicationCategory": "UtilityApplication",
+  "operatingSystem": "All",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+  "inLanguage": "ko"
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "각 군별 복무기간은 얼마인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "2025년 기준 육군과 해병대는 18개월, 해군은 20개월, 공군은 21개월입니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "전역일은 어떻게 계산하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "전역일은 입대일로부터 해당 군별 복무기간(월수)을 더한 날의 전날입니다. 예를 들어 육군의 경우 입대일 + 18개월 - 1일이 전역일이 됩니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "계급별 진급 시기는 언제인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "이등병으로 입대하여 2개월 후 일병, 8개월 후 상병, 14개월 후 병장으로 진급합니다. 이는 2021년 개정 기준입니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "복무 진행률은 어떻게 확인하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "입대일과 군별을 선택하면 전체 복무일수 대비 현재까지 복무한 일수를 백분율로 표시합니다. 실시간 카운트다운도 함께 제공됩니다."
+      }
+    }
+  ]
+}
+</script>
+
+<style>
+  .branch-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .branch {
+    padding: 14px 6px;
+    border-radius: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-sub);
+    text-align: center;
+    font-weight: 700;
+    font-size: 13px;
+    transition: all .15s ease;
+  }
+  .branch.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .progress-wrap {
+    margin-top: 8px;
+  }
+  .progress-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text-sub);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .rank-list { margin-top: 4px; }
+  .rank-row {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rank-row:last-child { border-bottom: none; }
+  .rank-badge {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--text-sub);
+    letter-spacing: -0.02em;
+  }
+  .rank-row.current .rank-badge {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-color: transparent;
+    color: #fff;
+  }
+  .rank-row.done .rank-badge {
+    opacity: 0.4;
+  }
+  .rank-info .name {
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .rank-info .date {
+    color: var(--text-sub);
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .rank-status {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-sub);
+  }
+  .rank-row.current .rank-status { color: var(--accent); }
+  .rank-row.done .rank-status { color: #444; }
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .empty {
+    text-align: center;
+    color: var(--text-sub);
+    font-size: 14px;
+    padding: 20px 0;
+  }
+  .seo-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+  }
+  .seo-content th,
+  .seo-content td {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+    text-align: center;
+  }
+  .seo-content th {
+    background: var(--card);
+    color: var(--text);
+    font-weight: 700;
+  }
+  .seo-content td {
+    color: var(--text-sub);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="nav">
+    <a href="index.html">디데이 계산</a>
+    <a href="couple.html">커플/기념일</a>
+    <a href="timeline.html">타임라인</a>
+    <a href="suneung.html">수능 디데이</a>
+    <a href="military.html" class="active">전역일</a>
+    <a href="age.html">만나이</a>
+    <a href="event.html">이벤트</a>
+  </nav>
+
+  <header class="page-header">
+    <h1>전역일 계산기</h1>
+    <p>군 복무 중인 당신을 응원합니다</p>
+  </header>
+
+  <!-- 입력 -->
+  <div class="card">
+    <label>군별 선택</label>
+    <div class="branch-grid" id="branch-grid" style="margin-bottom:18px"></div>
+
+    <label for="enlist-date">입대일</label>
+    <input type="date" id="enlist-date">
+  </div>
+
+  <!-- D-Day -->
+  <div class="card" id="result-card" style="display:none">
+    <div class="big-number-wrap">
+      <div class="big-number" id="dday">D-000</div>
+      <div class="big-number-suffix" id="discharge-date">전역일 -</div>
+    </div>
+    <div class="countdown">
+      <div class="unit"><div class="num" id="cd-d">00</div><div class="lbl">일</div></div>
+      <div class="unit"><div class="num" id="cd-h">00</div><div class="lbl">시간</div></div>
+      <div class="unit"><div class="num" id="cd-m">00</div><div class="lbl">분</div></div>
+      <div class="unit"><div class="num" id="cd-s">00</div><div class="lbl">초</div></div>
+    </div>
+  </div>
+
+  <!-- 진행률 -->
+  <div class="card" id="progress-card" style="display:none">
+    <div class="card-title">복무 진행률</div>
+    <div class="progress-wrap">
+      <div class="progress"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="progress-stats">
+        <span id="progress-pct">0.0%</span>
+        <span id="progress-days">0일 / 0일</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 진급 -->
+  <div class="card" id="rank-card" style="display:none">
+    <div class="card-title">계급별 진급일</div>
+    <div class="rank-list" id="rank-list"></div>
+  </div>
+
+  <!-- 버튼 -->
+  <div class="btn-row" id="btn-row" style="display:none">
+    <button class="btn" onclick="doShare()">공유하기</button>
+    <button class="btn secondary" onclick="downloadCard()">이미지 저장</button>
+  </div>
+  <div class="sns-share" id="sns-share-row" style="display:none">
+    <button class="sns-btn" onclick="snsShare('kakao', {title:'전역일 계산기', text:'전역까지 남은 날짜를 확인하세요!'})">
+      <svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.58 2 11c0 2.83 1.87 5.32 4.68 6.73l-1.2 4.46c-.1.36.31.65.63.44L10.7 19.5c.43.03.86.05 1.3.05 5.5 0 10-3.58 10-8s-4.5-8-10-8z"/></svg>
+      카카오톡
+    </button>
+    <button class="sns-btn" onclick="snsShare('twitter', {title:'전역일 계산기', text:'전역까지 남은 날짜를 확인하세요!'})">
+      <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      X
+    </button>
+    <button class="sns-btn" onclick="snsShare('facebook', {title:'전역일 계산기', text:'전역까지 남은 날짜를 확인하세요!'})">
+      <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      페이스북
+    </button>
+    <button class="sns-btn" onclick="snsShare('copy', {title:'전역일 계산기', text:'전역까지 남은 날짜를 확인하세요!'})">
+      <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+      링크 복사
+    </button>
+  </div>
+
+  <div class="card empty" id="empty-state">
+    입대일과 군별을 선택해주세요.
+  </div>
+
+  <!-- SEO 콘텐츠 -->
+  <div class="seo-content">
+    <h2>전역일 계산기란?</h2>
+    <p>전역일 계산기는 군 복무 중인 장병과 가족, 지인을 위한 무료 온라인 도구입니다. 입대일과 군별(육군, 해군, 공군, 해병대)을 선택하면 전역 예정일, 남은 복무일수, 실시간 카운트다운, 복무 진행률, 계급별 진급 예정일까지 한눈에 확인할 수 있습니다.</p>
+
+    <h2>군별 복무기간 안내</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>군별</th>
+          <th>복무기간</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>육군</td><td>18개월</td></tr>
+        <tr><td>해군</td><td>20개월</td></tr>
+        <tr><td>공군</td><td>21개월</td></tr>
+        <tr><td>해병대</td><td>18개월</td></tr>
+      </tbody>
+    </table>
+    <p>위 복무기간은 현행 병역법 기준이며, 전역일은 입대일로부터 복무기간(월수)을 더한 날의 전날로 계산됩니다.</p>
+
+    <h2>계급별 진급 시기</h2>
+    <p>2021년 개정 기준으로 이등병 입대 후 2개월 차에 일병, 8개월 차에 상병, 14개월 차에 병장으로 진급합니다. 본 계산기는 입대일을 기준으로 각 계급의 진급 예정일을 자동으로 산출하며, 현재 계급과 다음 진급까지 남은 기간도 함께 표시합니다.</p>
+  </div>
+</div>
+
+<footer>D-Day 계산기 &copy; 2025</footer>
+
+<script src="shared.js"></script>
+<script>
+
+// 군별 복무 기간 (월)
+const BRANCHES = {
+  army:    { label: '육군',   months: 18 },
+  navy:    { label: '해군',   months: 20 },
+  airforce:{ label: '공군',   months: 21 },
+  marine:  { label: '해병대', months: 18 },
+};
+
+// 계급별 진급 시점 (입대일 기준 누적 월수 — 2021년 개정 기준)
+const RANKS = [
+  { name: '이등병', cumMonths: 0 },
+  { name: '일병',   cumMonths: 2 },
+  { name: '상병',   cumMonths: 8 },
+  { name: '병장',   cumMonths: 14 },
+];
+
+let selectedBranch = 'army';
+let enlistDate = null;
+
+function renderBranches(){
+  const grid = document.getElementById('branch-grid');
+  grid.innerHTML = '';
+  Object.entries(BRANCHES).forEach(([k, b]) => {
+    const el = document.createElement('button');
+    el.className = 'branch' + (k === selectedBranch ? ' active' : '');
+    el.textContent = b.label;
+    el.onclick = () => {
+      selectedBranch = k;
+      renderBranches();
+      save();
+      updateAll();
+    };
+    grid.appendChild(el);
+  });
+}
+
+function addMonths(date, months){
+  const d = new Date(date);
+  const targetMonth = d.getMonth() + months;
+  d.setMonth(targetMonth);
+  return d;
+}
+
+function getDischargeDate(){
+  if (!enlistDate) return null;
+  // 복무기간 = N개월 - 1일 (전날 전역)
+  const end = addMonths(enlistDate, BRANCHES[selectedBranch].months);
+  end.setDate(end.getDate() - 1);
+  return end;
+}
+
+function fmtDate(d){
+  if (!d) return '-';
+  const dayNames = ['일','월','화','수','목','금','토'];
+  return `${d.getFullYear()}. ${pad(d.getMonth()+1)}. ${pad(d.getDate())} (${dayNames[d.getDay()]})`;
+}
+
+function updateCountdown(){
+  if (!enlistDate) return;
+  const discharge = getDischargeDate();
+  const now = new Date();
+  const endMs = new Date(discharge.getFullYear(), discharge.getMonth(), discharge.getDate(), 0, 0, 0);
+  const diff = endMs - now;
+  const days = Math.floor(diff / (24*60*60*1000));
+  const hours = Math.floor((diff % (24*60*60*1000)) / (60*60*1000));
+  const mins = Math.floor((diff % (60*60*1000)) / (60*1000));
+  const secs = Math.floor((diff % (60*1000)) / 1000);
+
+  const dday = daysBetween(now, discharge);
+  document.getElementById('dday').textContent = fmtDday(dday);
+  document.getElementById('cd-d').textContent = pad(Math.max(0, days));
+  document.getElementById('cd-h').textContent = pad(Math.max(0, hours));
+  document.getElementById('cd-m').textContent = pad(Math.max(0, mins));
+  document.getElementById('cd-s').textContent = pad(Math.max(0, secs));
+}
+
+function updateProgress(){
+  if (!enlistDate) return;
+  const discharge = getDischargeDate();
+  const total = daysBetween(enlistDate, discharge);
+  const done = Math.max(0, Math.min(total, daysBetween(enlistDate, new Date())));
+  const pct = total > 0 ? (done / total) * 100 : 0;
+  document.getElementById('progress-fill').style.width = pct.toFixed(1) + '%';
+  document.getElementById('progress-pct').textContent = pct.toFixed(1) + '%';
+  document.getElementById('progress-days').textContent = `${done}일 / ${total}일`;
+}
+
+function updateRanks(){
+  if (!enlistDate) return;
+  const list = document.getElementById('rank-list');
+  list.innerHTML = '';
+  const now = new Date();
+
+  RANKS.forEach((r, i) => {
+    const promoteDate = addMonths(enlistDate, r.cumMonths);
+    const nextDate = i < RANKS.length - 1 ? addMonths(enlistDate, RANKS[i+1].cumMonths) : getDischargeDate();
+
+    let status = 'upcoming';
+    if (now >= promoteDate && now < nextDate) status = 'current';
+    else if (now >= nextDate) status = 'done';
+
+    const row = document.createElement('div');
+    row.className = 'rank-row ' + status;
+    row.innerHTML = `
+      <div class="rank-badge">${r.name.substring(0,2)}</div>
+      <div class="rank-info">
+        <div class="name">${r.name}</div>
+        <div class="date">${fmtDate(promoteDate)}</div>
+      </div>
+      <div class="rank-status">${status === 'current' ? '현재' : status === 'done' ? '완료' : '예정'}</div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function updateAll(){
+  if (!enlistDate) {
+    document.getElementById('result-card').style.display = 'none';
+    document.getElementById('progress-card').style.display = 'none';
+    document.getElementById('rank-card').style.display = 'none';
+    document.getElementById('btn-row').style.display = 'none';
+    document.getElementById('sns-share-row').style.display = 'none';
+    document.getElementById('empty-state').style.display = '';
+    return;
+  }
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('result-card').style.display = '';
+  document.getElementById('progress-card').style.display = '';
+  document.getElementById('rank-card').style.display = '';
+  document.getElementById('btn-row').style.display = '';
+  document.getElementById('sns-share-row').style.display = '';
+
+  const discharge = getDischargeDate();
+  document.getElementById('discharge-date').textContent = '전역일 ' + fmtDate(discharge);
+  updateCountdown();
+  updateProgress();
+  updateRanks();
+}
+
+function doShare(){
+  const dday = daysBetween(new Date(), getDischargeDate());
+  shareOrCopy(`${BRANCHES[selectedBranch].label} 전역 ${fmtDday(dday)}`,
+    `전역까지 ${fmtDday(dday)}!`);
+}
+function downloadCard(){
+  const dday = daysBetween(new Date(), getDischargeDate());
+  const url = generateShareCard({
+    title: `${BRANCHES[selectedBranch].label} 전역까지`,
+    bigText: fmtDday(dday),
+    subText: fmtDate(getDischargeDate()),
+    footer: 'D-Day Calculator · 전역일'
+  });
+  downloadShareCard(url, '전역일.png');
+}
+
+// 저장/복원
+function save(){
+  localStorage.setItem('military', JSON.stringify({
+    branch: selectedBranch,
+    enlist: enlistDate ? enlistDate.toISOString().slice(0,10) : null,
+  }));
+}
+function load(){
+  try {
+    const s = JSON.parse(localStorage.getItem('military') || '{}');
+    if (s.branch && BRANCHES[s.branch]) selectedBranch = s.branch;
+    if (s.enlist) {
+      enlistDate = new Date(s.enlist);
+      document.getElementById('enlist-date').value = s.enlist;
+    }
+  } catch(e){}
+}
+
+document.getElementById('enlist-date').addEventListener('change', e => {
+  enlistDate = e.target.value ? new Date(e.target.value) : null;
+  save();
+  updateAll();
+});
+
+load();
+renderBranches();
+updateAll();
+setInterval(updateCountdown, 1000);
+</script>
+</body>
+</html>
